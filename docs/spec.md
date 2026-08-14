@@ -138,11 +138,11 @@ erDiagram
 | **RNF-01 — Consistência sob concorrência** | O sistema deve impedir duas reservas confirmadas para o mesmo `(viagem, assento)` mesmo sob requisições simultâneas. A garantia é feita no banco (índice único filtrado) e não apenas em código de aplicação (ver seção 10). |
 | **RNF-02 — Determinismo temporal** | Todas as regras dependentes de tempo (RN-02, RN-05) usam uma abstração de relógio injetável (`TimeProvider`), permitindo testes determinísticos e evitando `DateTime.Now` disperso. |
 | **RNF-03 — Fuso horário** | Datas são armazenadas e comparadas em UTC (`timestamptz`). A borda de apresentação assume `America/Sao_Paulo`; decisões de conversão são explícitas, nunca implícitas. |
-| **RNF-04 — Eficiência / green code** | O código evita alocações desnecessárias no caminho quente (sem LINQ supérfluo em laços quentes, uso de `Span`/`StringBuilder` onde relevante), usa I/O assíncrona ponta a ponta, *pooling* de conexões do Npgsql, leitura sem *tracking* (`AsNoTracking`) e projeções para evitar N+1, paginação nas listagens e *Server GC* no contêiner. |
+| **RNF-04 — Eficiência / green code** | O código evita alocações desnecessárias no caminho quente (sem LINQ supérfluo em laços quentes, uso de `Span`/`StringBuilder` onde relevante), usa I/O assíncrona ponta a ponta, leitura sem *tracking* (`AsNoTracking`) e projeções para evitar N+1, paginação nas listagens e *Server GC* no contêiner. |
 | **RNF-05 — Padronização de erros** | Todas as respostas de erro seguem o formato *Problem Details* (RFC 7807), com `type`, `title`, `status`, `detail` e `traceId`. |
 | **RNF-06 — Observabilidade** | Health check (`/health`), logs estruturados e um identificador de correlação por requisição. |
 | **RNF-07 — Capacidade e escala** | O sistema é dimensionado para um pico estimado a partir de dados reais do mercado de passagens de São Paulo. A meta de vazão, a latência-alvo (p95) e o plano de escala horizontal são detalhados no documento de *system design*; a API é *stateless* para escalar horizontalmente. |
-| **RNF-08 — Portabilidade** | O projeto executa de duas formas: (a) `docker compose up` sobe API + PostgreSQL; (b) sem Docker, via `dotnet run` apontando para um PostgreSQL local. Não uso banco *in-memory*. |
+| **RNF-08 — Portabilidade** | O projeto executa de duas formas: (a) `docker compose up` sobe API + PostgreSQL; (b) sem Docker, via `dotnet run` apontando para um PostgreSQL local. |
 | **RNF-09 — Documentação executável** | Todos os endpoints são documentados via OpenAPI e chamáveis pelo Swagger UI, com descrições, parâmetros, exemplos e códigos de resposta. |
 | **RNF-10 — Testabilidade** | A cobertura contempla, no mínimo, as regras RN-01 a RN-08, com relatório de cobertura gerado no CI. |
 | **RNF-11 — Privacidade / LGPD** | O CPF é dado pessoal (Lei 13.709/2018). É armazenado normalizado (só dígitos), **nunca registrado em log em texto puro** e retornado **mascarado** nas respostas da API (ex.: `***.***.**9-00`, expondo apenas os dígitos finais). A validação usa o valor completo internamente; a exposição é sempre mascarada. |
@@ -265,8 +265,8 @@ real (Testcontainers), exigindo que exatamente uma vença e as demais recebam `4
 
 ## 11. Matriz de casos de teste (derivada da spec)
 
-Enumero os casos aqui, antes de codar, para não esquecer nenhum. Cada caso é implementado no
-ciclo TDD (red → green → refactor). Nível: **U**nitário, **I**ntegração, **F**uncional.
+Cada caso é implementado no ciclo TDD (red → green → refactor). Nível: **U**nitário,
+**I**ntegração, **F**uncional, **A**rquitetura.
 
 | # | Caso | Regra | Nível | Esperado |
 |---|---|---|---|---|
@@ -300,7 +300,7 @@ ciclo TDD (red → green → refactor). Nível: **U**nitário, **I**ntegração,
 
 - **Framework-alvo:** `net8.0` (LTS), pela estabilidade de suporte estendido e ampla
   disponibilidade nos ambientes de produção. (ADR-0002)
-- **Banco:** PostgreSQL único, sem provider *in-memory*. (ADR-0003)
+- **Banco:** PostgreSQL único. (ADR-0003)
 - **Arquitetura:** Clean Architecture enxuta (Domain / Application / Infrastructure / Api),
   sem repositório genérico por reflexo — o `DbContext` já é *Unit of Work* + *Repository*.
   (ADR-0004)

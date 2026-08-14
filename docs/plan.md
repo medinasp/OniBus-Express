@@ -8,7 +8,7 @@
 
 ## 1. Stack e justificativas
 
-Toda escolha aqui responde a um "porquê", não a hábito.
+Cada tecnologia vem acompanhada da justificativa e da alternativa descartada.
 
 | Tecnologia | Versão | Por que | Alternativa descartada e motivo |
 |---|---|---|---|
@@ -234,7 +234,7 @@ a busca. Esse desenho só é ativado conforme a carga justificar (evolução, n�
 ## 11. Estimativa de capacidade (ancorada em dados de São Paulo)
 
 Na ausência de um número de carga fornecido, eu a **estimo a partir de dados reais** de mercado e
-desenho para ela. Um arquiteto não dimensiona no escuro.
+desenho para ela.
 
 **Fontes:** Rodoviária do Tietê — ~90 mil passageiros/dia e **>60 mil passagens vendidas/dia**;
 ClickBus (maior marketplace do país) — +62 mi de passagens acumuladas, run-rate recente na ordem

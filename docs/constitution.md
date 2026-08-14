@@ -17,8 +17,7 @@ resolve o problema errado de forma correta.
 ### P2 — TDD é inegociável
 Nenhuma linha de código de produção nasce sem um teste que falha antes. O ciclo é
 **RED → GREEN → REFACTOR**, uma unidade de comportamento por vez. A lista de casos de teste é
-derivada da spec (seção 11 do spec) antes de implementar, para não esquecer nenhum — mas os
-testes são implementados incrementalmente, não todos de uma vez.
+derivada da spec e implementada incrementalmente, não toda de uma vez.
 
 ### P3 — Correção sob concorrência é requisito de integridade, não de código
 A garantia de que um assento não é reservado duas vezes vive no **banco de dados** (restrição de
@@ -42,7 +41,7 @@ Regras dependentes de tempo usam uma abstração de relógio injetável (`TimePr
 
 ### P7 — Eficiência é requisito de primeira classe (green code)
 Uso consciente de recursos e do coletor de lixo é obrigatório, não opcional: I/O assíncrona ponta
-a ponta, *pooling* de conexões, leitura sem *tracking*, projeções para evitar N+1, paginação nas
+a ponta, leitura sem *tracking*, projeções para evitar N+1, paginação nas
 listagens, ausência de alocação supérflua no caminho quente.
 
 ### P8 — Observabilidade mínima desde o início
