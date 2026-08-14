@@ -15,11 +15,11 @@ Cada tecnologia vem acompanhada da justificativa e da alternativa descartada.
 | **.NET / ASP.NET Core** | `net8.0` (LTS) | Versão de suporte estendido (LTS), amplamente disponível em ambientes de produção. | `net10.0` — mais recente, sem ganho para este escopo e com menor disponibilidade nos ambientes-alvo. |
 | **Minimal APIs** | — | Menos cerimônia que controllers para 6 endpoints; menor superfície, melhor performance de startup. | MVC Controllers — verboso demais para o tamanho do problema. |
 | **Entity Framework Core + Npgsql** | 8.x | ORM maduro; `DbContext` já é *Unit of Work* + *Repository*; provider PostgreSQL de primeira linha. | Dapper — mais controle, mas mais boilerplate e sem migrations integradas. |
-| **PostgreSQL** | 16 | Índice único **parcial** (essencial para a concorrência), robusto, gratuito, ótimo com Testcontainers. | SQL Server — bom no mundo .NET, mas imagem pesada e sem vantagem aqui. Banco in-memory — descartado por mascarar o comportamento real de concorrência. |
+| **PostgreSQL** | 16 | Índice único **parcial** (essencial para a concorrência), robusto, gratuito, ótimo com Testcontainers. | SQL Server — bom no mundo .NET, mas imagem pesada e sem vantagem aqui. |
 | **FluentValidation** | 11.x | Validação de entrada declarativa, testável e desacoplada do modelo. | Data Annotations — limitado para regras compostas (ex.: CPF). |
 | **Swashbuckle (Swagger/OpenAPI)** | 6.x | Documentação executável da API; permite explorar e chamar os endpoints direto do navegador. | — |
 | **xUnit** | 2.x | Padrão de facto no ecossistema .NET; ótimo com paralelismo. | NUnit — equivalente; xUnit por familiaridade e integração. |
-| **Testcontainers for .NET** | 3.x | Sobe PostgreSQL real e descartável nos testes de integração — valida o comportamento real de concorrência. | Banco in-memory — descartado; mascara o comportamento de concorrência que mais importa validar. |
+| **Testcontainers for .NET** | 3.x | Sobe PostgreSQL real e descartável nos testes de integração — valida o comportamento real de concorrência. | SQLite nos testes — o dialeto diverge do PostgreSQL de produção em constraints e concorrência. |
 | **Serilog** | 3.x | Logs estruturados com enriquecimento (correlation id); *sinks* flexíveis. | `ILogger` puro — sem estruturação rica pronta. |
 | **coverlet + ReportGenerator** | — | Cobertura medida e publicada no CI. | — |
 | **Respawn** | 6.x | Reset rápido do estado do banco entre testes de integração. | Recriar container por teste — lento. |
@@ -276,7 +276,9 @@ de ~15–20 mi/ano.
 
 ### 12.2 Custo mensal ilustrativo (ordem de grandeza, região Brasil, pay-as-you-go)
 
-> Valores aproximados para comparação relativa — variam por região, reserva de capacidade e câmbio.
+> Cada valor é o custo **mensal, em dólares (US$/mês)**, para manter a infraestrutura no ar no tier
+> base — não é por requisição nem por registro. São valores aproximados para comparação relativa;
+> variam por região, reserva de capacidade e câmbio.
 
 | Camada | **Azure** (principal) | AWS | GCP |
 |---|---|---|---|
