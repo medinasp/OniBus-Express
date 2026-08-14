@@ -50,25 +50,17 @@ linguagem e do GC.
 Health check, logs estruturados e um identificador de correlação por requisição existem desde o
 primeiro endpoint.
 
-### P9 — Padrões de documentação e autoria
-A documentação é escrita em **primeira pessoa do singular ou de forma impessoal** — nunca em
-primeira pessoa do plural nem citando assistentes. O código **não leva comentários**, exceto os
-de documentação (`///` XML) nos endpoints, que devem ser completos o bastante para operar a API
-pelo Swagger. O README é em português; identificadores de código, em inglês.
+### P9 — Comentários apenas de documentação
+O código **não leva comentários**, exceto os de documentação (`///` XML) nos endpoints, que devem
+ser completos o bastante para operar a API pelo Swagger.
 
 ### P10 — Reprodutibilidade
 O projeto executa de duas formas: com Docker (`docker compose up`) e sem Docker (`dotnet run`
-contra um PostgreSQL local). O banco é **PostgreSQL único**; provider *in-memory* é proibido,
-inclusive em teste (integração usa PostgreSQL real via Testcontainers).
+contra um PostgreSQL local). O banco é **PostgreSQL único**; os testes de integração usam
+PostgreSQL real via Testcontainers.
 
 ### P11 — Disciplina de versionamento
-Commits pequenos, incrementais e planejados, no padrão **Conventional Commits**, provando o
-planejamento ponto a ponto. Sem rodapé de coautoria — autoria única do responsável pelo projeto.
-
-### P12 — Qualidade sobre quantidade
-Correção, testes e clareza vêm antes de quantidade de funcionalidades. Over-engineering é
-defeito. Análises de capacidade, custo em nuvem e plano de escala são valiosas, mas entram como
-**apêndice claramente marcado como visão de evolução**, jamais inflando o núcleo do MVP.
+Commits pequenos, incrementais e planejados, no padrão **Conventional Commits**.
 
 ---
 
