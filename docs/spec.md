@@ -147,6 +147,7 @@ erDiagram
 | **RNF-08 — Portabilidade** | O projeto executa de duas formas: (a) `docker compose up` sobe API + PostgreSQL; (b) sem Docker, via `dotnet run` apontando para um PostgreSQL local. Não uso banco *in-memory*. |
 | **RNF-09 — Documentação executável** | Todos os endpoints são documentados via OpenAPI e chamáveis pelo Swagger UI, com descrições, parâmetros, exemplos e códigos de resposta. |
 | **RNF-10 — Testabilidade** | A cobertura contempla, no mínimo, as regras RN-01 a RN-08, com relatório de cobertura gerado no CI. |
+| **RNF-11 — Privacidade / LGPD** | O CPF é dado pessoal (Lei 13.709/2018). É armazenado normalizado (só dígitos), **nunca registrado em log em texto puro** e retornado **mascarado** nas respostas da API (ex.: `***.***.**9-00`, expondo apenas os dígitos finais). A validação usa o valor completo internamente; a exposição é sempre mascarada. |
 
 ---
 
@@ -185,13 +186,15 @@ Corpo: `{ "tripId": "...", "seatNumber": 12, "passenger": { "name": "...", "cpf"
 ### RF-05 · `GET /api/reservations/{code}`
 Recupera a reserva pelo código.
 
-- **200 OK** — dados da reserva.
+- **200 OK** — dados da reserva, com o **CPF mascarado** (RNF-11).
 - **404 Not Found** — código inexistente.
 
-### RF-06 · `DELETE /api/reservations/{code}`
-Cancela a reserva.
+### RF-06 · `POST /api/reservations/{code}/cancellation`
+Cancela a reserva. Modelado como criação de um recurso de *cancelamento* sob a reserva, e não
+como `DELETE`, porque o cancelamento é uma **transição de estado**: a reserva não é removida,
+passa a `Cancelled` e continua consultável (decisão registrada em ADR-0006).
 
-- **204 No Content** — cancelada com sucesso (RN-07).
+- **200 OK** — cancelada com sucesso; retorna a reserva no estado `Cancelled` (RN-07).
 - **404 Not Found** — código inexistente.
 - **409 Conflict** — reserva já cancelada (RN-08).
 - **422 Unprocessable Entity** — fora da janela de 2 horas (RN-05).
@@ -305,6 +308,13 @@ ciclo TDD (red → green → refactor). Nível: **U**nitário, **I**ntegração,
   (ADR-0004)
 - **Erros de domínio** trafegam como *Result* na aplicação e são traduzidos para *Problem Details*
   na borda HTTP. (ADR-0005)
+- **Cancelamento** via `POST /reservations/{code}/cancellation` (transição de estado, não `DELETE`).
+  (ADR-0006)
+- **Uma reserva reserva exatamente um assento** para um passageiro. Compra de múltiplos assentos
+  num único pedido está fora do escopo do MVP.
+- **Seed de dados:** o banco é populado com rotas e viagens de exemplo (incluindo viagem futura,
+  viagem passada e viagem dentro da janela de 2h) para permitir a operação imediata da API pelo
+  avaliador via Swagger. Detalhado no `plan.md`.
 
 As decisões acima e suas alternativas ficam registradas como ADRs em `docs/adr/`. O documento de
 *system design* (geral e específico da aplicação), a estimativa de carga baseada no mercado de São
