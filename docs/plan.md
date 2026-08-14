@@ -216,26 +216,50 @@ A API é **stateless** — nenhum estado de sessão em memória — o que a torn
 horizontalmente por réplicas atrás de um balanceador. O único estado é o PostgreSQL, que também é
 a fronteira de consistência (índice único).
 
-### 10.2 Visão geral de produção (para onde escala)
+### 10.2 Visão geral de produção — system design clássico (para onde escala)
 
 ```mermaid
 flowchart TB
-    LB[Load Balancer / API Gateway<br/>+ rate limiting] --> R1[API réplica 1]
-    LB --> R2[API réplica 2]
-    LB --> R3[API réplica N]
-    R1 --> Cache[(Cache Redis<br/>rotas/buscas — TTL curto)]
-    R2 --> Cache
-    R3 --> Cache
-    R1 --> PG[(PostgreSQL primário<br/>escritas)]
-    R2 --> PG
-    PG --> RR[(Réplicas de leitura)]
-    R3 --> RR
-    PG --> Backup[(Backups / PITR)]
+    User[Cliente web / mobile] --> CDN[DNS + CDN]
+    CDN --> GW[API Gateway / Load Balancer<br/>TLS · rate limiting · roteamento]
+
+    subgraph AS [Camada de aplicação — stateless, auto-scaling]
+        API1[API #1]
+        API2[API #2]
+        APIN[API #N]
+    end
+    GW --> API1
+    GW --> API2
+    GW --> APIN
+
+    API1 --> Cache[(Redis<br/>cache de leitura · TTL curto)]
+    API2 --> Cache
+    APIN --> Cache
+
+    API1 --> PG[(PostgreSQL primário<br/>ESCRITAS · integridade)]
+    API2 --> PG
+    APIN --> PG
+
+    API1 --> RR[(Réplicas de leitura<br/>buscas)]
+    APIN --> RR
+    PG --> RR
+    PG --> Bak[(Backups / PITR)]
+
+    API2 -. eventos .-> Q[[Fila assíncrona<br/>amortece picos de escrita / notificações]]
+    AS -. métricas · logs · traces .-> Obs[Observabilidade]
 ```
 
-Leituras (listar rotas, buscar viagens) dominam o tráfego e são **cacheáveis** com TTL curto;
-escritas (reservas) vão ao primário, onde a integridade é garantida. Réplicas de leitura absorvem
-a busca. Esse desenho só é ativado conforme a carga justificar (evolução, não MVP).
+**Fluxo de requisição:**
+- **Borda:** DNS/CDN e o **gateway** fazem TLS, *rate limiting* e roteamento antes de tocar a aplicação.
+- **Leitura** (listar rotas, buscar viagens) — domina o tráfego; atendida pelo **cache Redis**
+  (TTL curto) e, no *miss*, pelas **réplicas de leitura**.
+- **Escrita** (reservas) — vai ao **primário**, onde mora a garantia de integridade (índice único).
+- **Picos** (feriados) — a camada de API faz **auto-scaling**; uma **fila assíncrona** pode amortecer
+  rajadas de escrita e desacoplar notificações.
+- **Resiliência/operação:** backups com *point-in-time recovery* e observabilidade (logs, métricas, tracing).
+
+O MVP entregue é a visão **10.1**; este desenho é o alvo de evolução, ativado conforme a carga
+(seção 11) justificar cada peça.
 
 ---
 
