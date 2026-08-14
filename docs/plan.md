@@ -177,6 +177,12 @@ Pirâmide, do rápido/barato ao lento/caro (constituição P2):
 **CI (GitHub Actions):** *restore → build → test (com Docker para Testcontainers) → cobertura* a
 cada push, mantendo a suíte sempre verde.
 
+**Onde os testes rodam:** a suíte é executada por `dotnet test`, não pelo `docker-compose`. O
+`docker-compose` serve para **operar a aplicação**; os testes de integração/funcionais sobem seu
+**próprio** PostgreSQL descartável via Testcontainers, que conversa com o daemon Docker da máquina
+ou do runner de CI (os runners do GitHub Actions já vêm com Docker). Os testes unitários não
+precisam de Docker.
+
 ---
 
 ## 9. Empacotamento e execução
