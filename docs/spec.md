@@ -261,12 +261,17 @@ Essa abordagem é correta sob qualquer nível de concorrência e é validada por
 integração que dispara múltiplas requisições paralelas contra o mesmo assento em um PostgreSQL
 real (Testcontainers), exigindo que exatamente uma vença e as demais recebam `409`.
 
+Como efeito colateral, essa mesma restrição oferece **idempotência** contra envios duplicados sem
+custo adicional: um duplo-clique ou uma retentativa da mesma reserva não gera duplicidade — a
+tentativa repetida do mesmo assento recebe `409`, jamais uma segunda reserva.
+
 ---
 
 ## 11. Matriz de casos de teste (derivada da spec)
 
-Cada caso é implementado no ciclo TDD (red → green → refactor). Nível: **U**nitário,
-**I**ntegração, **F**uncional, **A**rquitetura.
+Cada caso é implementado no ciclo TDD (red → green → refactor).
+
+**Legenda da coluna Nível:** `U` = Unitário · `I` = Integração · `F` = Funcional · `A` = Arquitetura.
 
 | # | Caso | Regra | Nível | Esperado |
 |---|---|---|---|---|
