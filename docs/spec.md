@@ -144,7 +144,7 @@ erDiagram
 | **RNF-07 — Capacidade e escala** | O sistema é dimensionado para um pico estimado a partir de dados reais do mercado de passagens de São Paulo. A meta de vazão, a latência-alvo (p95) e o plano de escala horizontal são detalhados no documento de *system design*; a API é *stateless* para escalar horizontalmente. |
 | **RNF-08 — Portabilidade** | O projeto executa de duas formas: (a) `docker compose up` sobe API + PostgreSQL; (b) sem Docker, via `dotnet run` apontando para um PostgreSQL local. |
 | **RNF-09 — Documentação executável** | Todos os endpoints são documentados via OpenAPI e chamáveis pelo Swagger UI, com descrições, parâmetros, exemplos e códigos de resposta. |
-| **RNF-10 — Testabilidade** | A cobertura contempla, no mínimo, as regras RN-01 a RN-08, com relatório de cobertura gerado no CI. |
+| **RNF-10 — Testabilidade** | A cobertura contempla, no mínimo, as regras RN-01 a RN-08, com relatório de cobertura gerado na própria execução dos testes (coverlet + ReportGenerator). |
 | **RNF-11 — Privacidade / LGPD** | O CPF é dado pessoal (Lei 13.709/2018). É armazenado normalizado (só dígitos), **nunca registrado em log em texto puro** e retornado **mascarado** nas respostas da API (ex.: `***.***.**9-00`, expondo apenas os dígitos finais). A validação usa o valor completo internamente; a exposição é sempre mascarada. |
 
 ---
