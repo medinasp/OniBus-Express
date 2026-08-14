@@ -43,8 +43,7 @@ Regras dependentes de tempo usam uma abstração de relógio injetável (`TimePr
 ### P7 — Eficiência é requisito de primeira classe (green code)
 Uso consciente de recursos e do coletor de lixo é obrigatório, não opcional: I/O assíncrona ponta
 a ponta, *pooling* de conexões, leitura sem *tracking*, projeções para evitar N+1, paginação nas
-listagens, ausência de alocação supérflua no caminho quente. O objetivo é demonstrar domínio da
-linguagem e do GC.
+listagens, ausência de alocação supérflua no caminho quente.
 
 ### P8 — Observabilidade mínima desde o início
 Health check, logs estruturados e um identificador de correlação por requisição existem desde o

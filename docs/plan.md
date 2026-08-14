@@ -19,7 +19,7 @@ Toda escolha aqui responde a um "porquê", não a hábito.
 | **FluentValidation** | 11.x | Validação de entrada declarativa, testável e desacoplada do modelo. | Data Annotations — limitado para regras compostas (ex.: CPF). |
 | **Swashbuckle (Swagger/OpenAPI)** | 6.x | Documentação executável da API; permite explorar e chamar os endpoints direto do navegador. | — |
 | **xUnit** | 2.x | Padrão de facto no ecossistema .NET; ótimo com paralelismo. | NUnit — equivalente; xUnit por familiaridade e integração. |
-| **Testcontainers for .NET** | 3.x | Sobe PostgreSQL real e descartável nos testes de integração — valida a concorrência de verdade. | Banco in-memory — descartado; mascara o comportamento de concorrência que mais importa validar. |
+| **Testcontainers for .NET** | 3.x | Sobe PostgreSQL real e descartável nos testes de integração — valida o comportamento real de concorrência. | Banco in-memory — descartado; mascara o comportamento de concorrência que mais importa validar. |
 | **Serilog** | 3.x | Logs estruturados com enriquecimento (correlation id); *sinks* flexíveis. | `ILogger` puro — sem estruturação rica pronta. |
 | **coverlet + ReportGenerator** | — | Cobertura medida e publicada no CI. | — |
 | **Respawn** | 6.x | Reset rápido do estado do banco entre testes de integração. | Recriar container por teste — lento. |
@@ -175,7 +175,7 @@ Pirâmide, do rápido/barato ao lento/caro (constituição P2):
 **Relógio nos testes:** `TimeProvider` falso (`FakeTimeProvider`) torna T-09..12 determinísticos.
 **Cobertura:** coverlet no CI, relatório via ReportGenerator, foco em RN-01..08 (não perseguir 100%).
 **CI (GitHub Actions):** *restore → build → test (com Docker para Testcontainers) → cobertura* a
-cada push, provando que a suíte está verde.
+cada push, mantendo a suíte sempre verde.
 
 ---
 
@@ -264,7 +264,7 @@ de ~15–20 mi/ano.
 
 ## 12. Apêndice (visão de evolução — além do escopo do MVP)
 
-> Marcado explicitamente como forward-looking. Não infla o núcleo; demonstra visão de custo/escala.
+> Marcado explicitamente como forward-looking. Não infla o núcleo; registra a visão de custo e escala.
 
 ### 12.1 Plano de escala por estágio
 
