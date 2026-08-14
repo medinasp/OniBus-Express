@@ -13,7 +13,7 @@ Cada tecnologia vem acompanhada da justificativa e da alternativa descartada.
 | Tecnologia | Versão | Por que | Alternativa descartada e motivo |
 |---|---|---|---|
 | **.NET / ASP.NET Core** | `net8.0` (LTS) | Versão de suporte estendido (LTS), amplamente disponível em ambientes de produção. | `net10.0` — mais recente, sem ganho para este escopo e com menor disponibilidade nos ambientes-alvo. |
-| **Minimal APIs** | — | Menos cerimônia que controllers para 6 endpoints; menor superfície, melhor performance de startup. | MVC Controllers — verboso demais para o tamanho do problema. |
+| **Minimal APIs** | — | Menos cerimônia que controllers para 6 endpoints; menor superfície, melhor performance de startup (ADR-0009). | MVC Controllers — verboso demais para o tamanho do problema. |
 | **Entity Framework Core + Npgsql** | 8.x | ORM maduro; `DbContext` já é *Unit of Work* + *Repository*; provider PostgreSQL de primeira linha. | Dapper — mais controle, mas mais boilerplate e sem migrations integradas. |
 | **PostgreSQL** | 16 | Índice único **parcial** (essencial para a concorrência), robusto, gratuito, ótimo com Testcontainers. | SQL Server — bom no mundo .NET, mas imagem pesada e sem vantagem aqui. |
 | **FluentValidation** | 11.x | Validação de entrada declarativa, testável e desacoplada do modelo. | Data Annotations — limitado para regras compostas (ex.: CPF). |
@@ -301,4 +301,4 @@ o que reforça o cache de leitura como principal alavanca de custo.
 
 ---
 
-*ADRs referenciados (ADR-0001..0007) são registrados em `docs/adr/` no próximo commit.*
+*Decisões arquiteturais registradas como ADRs (ADR-0001..0009) em `docs/adr/`.*

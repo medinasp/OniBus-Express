@@ -249,7 +249,7 @@ CREATE UNIQUE INDEX ux_reservation_active_seat
 A regra RN-01 é o ponto crítico do sistema. Uma checagem "consulta-depois-insere" em código é
 insuficiente: duas requisições simultâneas podem ler o assento como livre e ambas inserir.
 
-**Decisão:** a fonte da verdade é o banco. O índice único filtrado da seção 9 torna
+**Decisão (ADR-0008):** a fonte da verdade é o banco. O índice único filtrado da seção 9 torna
 fisicamente impossível haver duas reservas `Confirmed` no mesmo assento/viagem. O fluxo de criação:
 
 1. valida entrada e regras de negócio (RN-02, RN-03, RN-06, RN-09);
@@ -308,7 +308,7 @@ Cada caso é implementado no ciclo TDD (red → green → refactor).
 - **Banco:** PostgreSQL único. (ADR-0003)
 - **Arquitetura:** Clean Architecture enxuta (Domain / Application / Infrastructure / Api),
   sem repositório genérico por reflexo — o `DbContext` já é *Unit of Work* + *Repository*.
-  (ADR-0004)
+  (ADR-0001, ADR-0004)
 - **Erros de domínio** trafegam como *Result* na aplicação e são traduzidos para *Problem Details*
   na borda HTTP. (ADR-0005)
 - **Cancelamento** via `POST /reservations/{code}/cancellation` (transição de estado, não `DELETE`).
