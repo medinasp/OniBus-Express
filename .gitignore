@@ -25,6 +25,3 @@ appsettings.*.Local.json
 # OS
 .DS_Store
 Thumbs.db
-
-# Material de apoio privado — nunca versionar
-entendimentos/
