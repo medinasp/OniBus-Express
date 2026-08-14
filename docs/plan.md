@@ -12,14 +12,14 @@ Toda escolha aqui responde a um "porquê", não a hábito.
 
 | Tecnologia | Versão | Por que | Alternativa descartada e motivo |
 |---|---|---|---|
-| **.NET / ASP.NET Core** | `net8.0` (LTS) | Exigência do desafio (".NET 8+"); LTS = suporte longo e disponível no ambiente do avaliador. | `net10.0` — mais novo, mas arrisca incompatibilidade no ambiente do avaliador sem ganho para o MVP. |
+| **.NET / ASP.NET Core** | `net8.0` (LTS) | Versão de suporte estendido (LTS), amplamente disponível em ambientes de produção. | `net10.0` — mais recente, sem ganho para este escopo e com menor disponibilidade nos ambientes-alvo. |
 | **Minimal APIs** | — | Menos cerimônia que controllers para 6 endpoints; menor superfície, melhor performance de startup. | MVC Controllers — verboso demais para o tamanho do problema. |
 | **Entity Framework Core + Npgsql** | 8.x | ORM maduro; `DbContext` já é *Unit of Work* + *Repository*; provider PostgreSQL de primeira linha. | Dapper — mais controle, mas mais boilerplate e sem migrations integradas. |
-| **PostgreSQL** | 16 | Índice único **parcial** (essencial para a concorrência), robusto, gratuito, ótimo com Testcontainers. | SQL Server — bom no mundo .NET, mas imagem pesada e sem vantagem aqui. In-memory — proibido pela constituição (mascara concorrência). |
+| **PostgreSQL** | 16 | Índice único **parcial** (essencial para a concorrência), robusto, gratuito, ótimo com Testcontainers. | SQL Server — bom no mundo .NET, mas imagem pesada e sem vantagem aqui. Banco in-memory — descartado por mascarar o comportamento real de concorrência. |
 | **FluentValidation** | 11.x | Validação de entrada declarativa, testável e desacoplada do modelo. | Data Annotations — limitado para regras compostas (ex.: CPF). |
-| **Swashbuckle (Swagger/OpenAPI)** | 6.x | Documentação executável exigida; permite operar a API sem Postman. | — |
+| **Swashbuckle (Swagger/OpenAPI)** | 6.x | Documentação executável da API; permite explorar e chamar os endpoints direto do navegador. | — |
 | **xUnit** | 2.x | Padrão de facto no ecossistema .NET; ótimo com paralelismo. | NUnit — equivalente; xUnit por familiaridade e integração. |
-| **Testcontainers for .NET** | 3.x | Sobe PostgreSQL real e descartável nos testes de integração — valida a concorrência de verdade. | Provider in-memory — proibido; mascara o bug que mais importa. |
+| **Testcontainers for .NET** | 3.x | Sobe PostgreSQL real e descartável nos testes de integração — valida a concorrência de verdade. | Banco in-memory — descartado; mascara o comportamento de concorrência que mais importa validar. |
 | **Serilog** | 3.x | Logs estruturados com enriquecimento (correlation id); *sinks* flexíveis. | `ILogger` puro — sem estruturação rica pronta. |
 | **coverlet + ReportGenerator** | — | Cobertura medida e publicada no CI. | — |
 | **Respawn** | 6.x | Reset rápido do estado do banco entre testes de integração. | Recriar container por teste — lento. |
@@ -233,8 +233,8 @@ a busca. Esse desenho só é ativado conforme a carga justificar (evolução, n�
 
 ## 11. Estimativa de capacidade (ancorada em dados de São Paulo)
 
-Como o desafio não fornece a carga esperada, eu a **estimo a partir de dados reais** e desenho para
-ela. Um arquiteto não dimensiona no escuro.
+Na ausência de um número de carga fornecido, eu a **estimo a partir de dados reais** de mercado e
+desenho para ela. Um arquiteto não dimensiona no escuro.
 
 **Fontes:** Rodoviária do Tietê — ~90 mil passageiros/dia e **>60 mil passagens vendidas/dia**;
 ClickBus (maior marketplace do país) — +62 mi de passagens acumuladas, run-rate recente na ordem

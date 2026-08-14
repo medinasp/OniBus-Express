@@ -22,9 +22,8 @@ O objetivo do MVP é permitir que um consumidor:
 5. consulte a reserva pelo código;
 6. cancele a reserva dentro da janela permitida.
 
-Priorizo **qualidade sobre quantidade**: correção das regras de negócio, consistência de dados
-sob concorrência, testes significativos e portabilidade (com e sem Docker) acima da quantidade de
-funcionalidades.
+Priorizo a correção das regras de negócio, a consistência de dados sob concorrência, testes
+significativos e a portabilidade (com e sem Docker) como pilares deste MVP.
 
 ---
 
@@ -42,8 +41,7 @@ funcionalidades.
 - Observabilidade mínima (health checks, logs estruturados, correlação de requisição).
 
 ### 2.2 Fora do escopo
-- Front-end (React) — opcional no desafio; só será desenvolvido se o backend estiver plenamente
-  concluído e houver tempo, sem comprometer o núcleo.
+- Front-end (interface de usuário) — fora do escopo desta entrega, centrada no backend.
 - Autenticação/autorização de usuários e perfis administrativos.
 - Pagamento e emissão fiscal.
 - Verificação de existência real do CPF junto à Receita Federal (exigiria serviço externo; a
@@ -248,7 +246,7 @@ CREATE UNIQUE INDEX ux_reservation_active_seat
 
 ## 10. Estratégia de concorrência (prevenção de double-booking)
 
-A regra RN-01 é o ponto crítico do desafio. Uma checagem "consulta-depois-insere" em código é
+A regra RN-01 é o ponto crítico do sistema. Uma checagem "consulta-depois-insere" em código é
 insuficiente: duas requisições simultâneas podem ler o assento como livre e ambas inserir.
 
 **Decisão:** a fonte da verdade é o banco. O índice único filtrado da seção 9 torna
@@ -300,8 +298,8 @@ ciclo TDD (red → green → refactor). Nível: **U**nitário, **I**ntegração,
 
 ## 12. Premissas e decisões
 
-- **Framework-alvo:** `net8.0` (LTS). O desafio pede ".NET 8+"; escolho o 8 por LTS e máxima
-  compatibilidade com o ambiente do avaliador, mesmo tendo SDK mais novo disponível. (ADR-0002)
+- **Framework-alvo:** `net8.0` (LTS), pela estabilidade de suporte estendido e ampla
+  disponibilidade nos ambientes de produção. (ADR-0002)
 - **Banco:** PostgreSQL único, sem provider *in-memory*. (ADR-0003)
 - **Arquitetura:** Clean Architecture enxuta (Domain / Application / Infrastructure / Api),
   sem repositório genérico por reflexo — o `DbContext` já é *Unit of Work* + *Repository*.
@@ -313,8 +311,8 @@ ciclo TDD (red → green → refactor). Nível: **U**nitário, **I**ntegração,
 - **Uma reserva reserva exatamente um assento** para um passageiro. Compra de múltiplos assentos
   num único pedido está fora do escopo do MVP.
 - **Seed de dados:** o banco é populado com rotas e viagens de exemplo (incluindo viagem futura,
-  viagem passada e viagem dentro da janela de 2h) para permitir a operação imediata da API pelo
-  avaliador via Swagger. Detalhado no `plan.md`.
+  viagem passada e viagem dentro da janela de 2h) para permitir a operação imediata da API via
+  Swagger. Detalhado no `plan.md`.
 
 As decisões acima e suas alternativas ficam registradas como ADRs em `docs/adr/`. O documento de
 *system design* (geral e específico da aplicação), a estimativa de carga baseada no mercado de São
