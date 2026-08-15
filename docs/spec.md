@@ -137,9 +137,9 @@ erDiagram
 |---|---|
 | **RNF-01 — Consistência sob concorrência** | O sistema deve impedir duas reservas confirmadas para o mesmo `(viagem, assento)` mesmo sob requisições simultâneas. A garantia é feita no banco (índice único filtrado) e não apenas em código de aplicação (ver seção 10). |
 | **RNF-02 — Determinismo temporal** | Todas as regras dependentes de tempo (RN-02, RN-05) usam uma abstração de relógio injetável (`TimeProvider`), permitindo testes determinísticos e evitando `DateTime.Now` disperso. |
-| **RNF-03 — Fuso horário** | Datas são armazenadas e comparadas em UTC (`timestamptz`). A borda de apresentação assume `America/Sao_Paulo`; decisões de conversão são explícitas, nunca implícitas. |
-| **RNF-04 — Eficiência / green code** | O código evita alocações desnecessárias no caminho quente (sem LINQ supérfluo em laços quentes, uso de `Span`/`StringBuilder` onde relevante), usa I/O assíncrona ponta a ponta, leitura sem *tracking* (`AsNoTracking`) e projeções para evitar N+1, paginação nas listagens e *Server GC* no contêiner. |
-| **RNF-05 — Padronização de erros** | Todas as respostas de erro seguem o formato *Problem Details* (RFC 7807), com `type`, `title`, `status`, `detail` e `traceId`. |
+| **RNF-03 — Fuso horário** | Datas são armazenadas, comparadas e retornadas em UTC (`timestamptz`, ISO-8601). A conversão para um fuso local (ex.: `America/Sao_Paulo`) é responsabilidade do cliente de apresentação, fora do escopo deste backend. |
+| **RNF-04 — Eficiência / green code** | O código evita alocações desnecessárias no caminho quente (sem LINQ supérfluo em laços quentes, uso de `Span`/`stackalloc` onde relevante — ex.: `Cpf` e `ReservationCode`), usa I/O assíncrona ponta a ponta, leitura sem *tracking* (`AsNoTracking`) e projeções, paginação nas listagens e *Server GC* no contêiner. |
+| **RNF-05 — Padronização de erros** | Todas as respostas de erro seguem o formato *Problem Details* (RFC 7807), com `type`, `title`, `status` e `detail` (mais `errors` por campo nas validações). O identificador de correlação da requisição é retornado no cabeçalho `X-Correlation-Id`. |
 | **RNF-06 — Observabilidade** | Health check (`/health`), logs estruturados e um identificador de correlação por requisição. |
 | **RNF-07 — Capacidade e escala** | O sistema é dimensionado para um pico estimado a partir de dados reais do mercado de passagens de São Paulo. A meta de vazão, a latência-alvo (p95) e o plano de escala horizontal são detalhados no documento de *system design*; a API é *stateless* para escalar horizontalmente. |
 | **RNF-08 — Portabilidade** | O projeto executa de duas formas: (a) `docker compose up` sobe API + PostgreSQL; (b) sem Docker, via `dotnet run` apontando para um PostgreSQL local. |
@@ -219,10 +219,11 @@ Exemplo de corpo:
   "type": "https://onibus.express/errors/seat-already-taken",
   "title": "Assento indisponível",
   "status": 409,
-  "detail": "O assento 12 da viagem já está reservado.",
-  "traceId": "00-2f9c...-01"
+  "detail": "O assento já está reservado para esta viagem."
 }
 ```
+
+O identificador de correlação da requisição é devolvido no cabeçalho `X-Correlation-Id`.
 
 ---
 
@@ -292,7 +293,7 @@ Cada caso é implementado no ciclo TDD (red → green → refactor).
 | T-14 | Reservar assento já confirmado retorna conflito | RN-01 | I | 409 |
 | T-15 | **Concorrência:** N requisições paralelas no mesmo assento → 1 vence, resto 409 | RN-01/RNF-01 | I | 1×201, (N-1)×409 |
 | T-16 | Cancelar reserva libera o assento para nova reserva | RN-07 | I | reserva subsequente 201 |
-| T-17 | Cancelar reserva já cancelada retorna conflito | RN-08 | I/F | 409 |
+| T-17 | Cancelar reserva já cancelada retorna conflito | RN-08 | U | 409 |
 | T-18 | `GET /trips` sem resultados retorna 200 com lista vazia | RF-02 | F | 200 |
 | T-19 | `GET /trips/{id}` inexistente retorna 404 | RF-03 | F | 404 |
 | T-20 | `GET /reservations/{code}` inexistente retorna 404 | RF-05 | F | 404 |

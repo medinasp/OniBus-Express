@@ -49,9 +49,10 @@ Health check, logs estruturados e um identificador de correlação por requisiç
 primeiro endpoint.
 
 ### P9 — Código sem comentários
-O código **não leva comentários**; nomes claros e tipos expressivos bastam. A documentação dos
-endpoints necessária para operar a API pelo Swagger é expressa por **metadados OpenAPI** (resumo,
-descrição e códigos de resposta), não por comentários.
+O código autoral **não leva comentários**; nomes claros e tipos expressivos bastam (código gerado,
+como as *migrations* do EF Core, é exceção). A documentação dos endpoints necessária para operar a
+API pelo Swagger é expressa por **metadados OpenAPI** (resumo, descrição e códigos de resposta),
+não por comentários.
 
 ### P10 — Reprodutibilidade
 O projeto executa de duas formas: com Docker (`docker compose up`) e sem Docker (`dotnet run`

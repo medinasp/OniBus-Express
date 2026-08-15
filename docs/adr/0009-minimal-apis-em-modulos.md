@@ -10,8 +10,9 @@ Os seis endpoints precisam ser expostos numa arquitetura em camadas, sem concent
 ## Opções consideradas
 1. **Controllers** — muita convenção embutida (filtros, *model binding*); estrutura tradicional,
    porém mais cerimônia para um número pequeno de endpoints.
-2. **Minimal APIs em módulos** — endpoints agrupados por recurso com `MapGroup` e métodos de
-   extensão; `Program.cs` fino, apenas compondo DI e pipeline.
+2. **Minimal APIs em módulos** — endpoints agrupados por recurso em métodos de extensão
+   (`MapRouteEndpoints`, `MapTripEndpoints`, `MapReservationEndpoints`); `Program.cs` fino, apenas
+   compondo DI e pipeline.
 
 ## Decisão
 Minimal APIs agrupadas em módulos por recurso (`RouteEndpoints`, `TripEndpoints`,

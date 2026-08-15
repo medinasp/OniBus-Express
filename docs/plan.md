@@ -20,7 +20,7 @@ Cada tecnologia vem acompanhada da justificativa e da alternativa descartada.
 | **Swashbuckle (Swagger/OpenAPI)** | 6.x | Documentação executável da API; permite explorar e chamar os endpoints direto do navegador. | — |
 | **xUnit** | 2.x | Padrão de facto no ecossistema .NET; ótimo com paralelismo. | NUnit — equivalente; xUnit por familiaridade e integração. |
 | **Testcontainers for .NET** | 3.x | Sobe PostgreSQL real e descartável nos testes de integração — valida o comportamento real de concorrência. | SQLite nos testes — o dialeto diverge do PostgreSQL de produção em constraints e concorrência. |
-| **Serilog** | 3.x | Logs estruturados com enriquecimento (correlation id); *sinks* flexíveis. | `ILogger` puro — sem estruturação rica pronta. |
+| **Serilog** | via `Serilog.AspNetCore` 8.x | Logs estruturados com enriquecimento (correlation id); *sinks* flexíveis. | `ILogger` puro — sem estruturação rica pronta. |
 | **coverlet + ReportGenerator** | — | Cobertura medida e publicada no CI. | — |
 | **Respawn** | 6.x | Reset rápido do estado do banco entre testes de integração. | Recriar container por teste — lento. |
 
@@ -39,22 +39,27 @@ onibus-express/
 │  ├─ OniBusExpress.Domain/          # Entidades, value objects, regras puras, erros de domínio
 │  │   ├─ Reservations/              #   Reservation, ReservationCode, ReservationStatus
 │  │   ├─ Trips/                     #   Trip, Route
-│  │   ├─ Passengers/                #   Cpf (value object com validação mod-11), PassengerName
-│  │   └─ Abstractions/              #   Result<T>, DomainError
-│  ├─ OniBusExpress.Application/     # Casos de uso, DTOs, validações, portas (interfaces)
-│  │   ├─ Reservations/              #   CreateReservation, CancelReservation, GetReservation
-│  │   ├─ Trips/                     #   ListRoutes, SearchTrips, GetTripDetails
-│  │   └─ Abstractions/              #   IReservationRepository, IUnitOfWork, IClock (TimeProvider)
-│  ├─ OniBusExpress.Infrastructure/  # EF Core, DbContext, migrations, seed, repositórios
-│  │   ├─ Persistence/               #   AppDbContext, configurations, migrations
-│  │   └─ Reservations/              #   ReservationRepository
-│  └─ OniBusExpress.Api/             # Minimal APIs, ProblemDetails, Swagger, DI, middleware
+│  │   ├─ Passengers/                #   Cpf (validação mod-11), PassengerName
+│  │   └─ Abstractions/              #   Result, Result<T>, DomainError, ErrorType
+│  ├─ OniBusExpress.Application/     # Casos de uso, DTOs de leitura, portas (interfaces)
+│  │   ├─ Reservations/              #   CreateReservation, CancelReservation, GetReservation, ReservationResponse
+│  │   ├─ Trips/                     #   RouteDto, TripSummaryDto, TripDetailsDto, Pagination
+│  │   └─ Abstractions/              #   IReservationRepository, ITripRepository, IRouteQueries, ITripQueries
+│  ├─ OniBusExpress.Infrastructure/  # EF Core, DbContext, migrations, seed, repositórios e queries
+│  │   ├─ Persistence/               #   AppDbContext, Configurations, Migrations, DatabaseSeeder
+│  │   ├─ Reservations/              #   ReservationRepository
+│  │   └─ Trips/                     #   TripRepository, RouteQueries, TripQueries
+│  └─ OniBusExpress.Api/             # Minimal APIs, ProblemDetails, Swagger, DI, observabilidade
 │      ├─ Endpoints/                 #   RouteEndpoints, TripEndpoints, ReservationEndpoints
-│      └─ Contracts/                 #   Request/Response DTOs (CPF mascarado na saída)
+│      ├─ Contracts/                 #   Request DTOs (CreateReservationRequest)
+│      ├─ Validation/                #   CreateReservationRequestValidator (FluentValidation)
+│      ├─ Http/                      #   ApiResults (Result -> ProblemDetails), GlobalExceptionHandler
+│      ├─ Observability/             #   CorrelationIdMiddleware
+│      └─ Startup/                   #   DatabaseStartup (migrate + seed no boot)
 ├─ tests/
-│  ├─ OniBusExpress.UnitTests/       # Domínio puro (CPF, código, janela 2h, assento)
-│  ├─ OniBusExpress.IntegrationTests/# Testcontainers + PostgreSQL real (concorrência, persistência)
-│  ├─ OniBusExpress.FunctionalTests/ # WebApplicationFactory (6 endpoints ponta a ponta)
+│  ├─ OniBusExpress.UnitTests/       # Domínio e casos de uso puros (CPF, código, janela 2h, assento)
+│  ├─ OniBusExpress.IntegrationTests/# Testcontainers + PostgreSQL real (concorrência, persistência, queries)
+│  ├─ OniBusExpress.FunctionalTests/ # WebApplicationFactory (endpoints ponta a ponta)
 │  └─ OniBusExpress.ArchitectureTests/# NetArchTest (fronteiras de camada)
 ├─ docs/                             # constitution, spec, plan, tasks, adr/
 ├─ docker-compose.yml
@@ -76,12 +81,11 @@ build se essa regra for violada (T-23).
 |---|---|---|
 | **Clean Architecture** | solução inteira | Isola regra de negócio de infraestrutura; testável sem banco nem HTTP. |
 | **Value Object** | `Cpf`, `ReservationCode` | Encapsula validação e formato onde eles pertencem; um `Cpf` inválido não existe no domínio. |
-| **Result pattern** | `Application` | Erros previsíveis (assento ocupado, viagem passada) não usam exceção para controle de fluxo (constituição P5). |
+| **Result pattern** | `Domain` (aplicado nos casos de uso) | Erros previsíveis (assento ocupado, viagem passada) não usam exceção para controle de fluxo (constituição P5). |
 | **Repository (estreito, por agregado)** | `IReservationRepository` | Só onde revela intenção/ajuda teste; **sem** repositório genérico — o `DbContext` já é UoW+Repo (ADR-0004). |
 | **Unit of Work** | `DbContext`/`SaveChanges` | Transação atômica na criação da reserva. |
-| **Options pattern** | configuração | Configuração tipada e validada no startup. |
 | **Factory / retry** | geração de `ReservationCode` | Gera código legível e re-tenta em colisão sob o índice único (ADR-0007). |
-| **Mediator (leve, manual)** | endpoints → casos de uso | Endpoints finos delegam a *handlers*; sem acoplar HTTP à regra. (MediatR evitado por licença comercial recente e por ser desnecessário no tamanho do MVP.) |
+| **Casos de uso como handlers** | endpoints → casos de uso | Endpoints finos delegam a casos de uso injetados por DI; sem acoplar HTTP à regra. (MediatR evitado por licença comercial recente e por ser desnecessário no tamanho do MVP.) |
 | **Guard clause** | validação de entrada | Falha cedo, mantém o caminho feliz linear. |
 
 ---
@@ -145,19 +149,23 @@ verificada pelo teste T-15. A tradução de `PostgresException 23505` → `409` 
 
 ## 6. Erros, validação e privacidade
 
-- **Erros:** `Result` na aplicação → `ProblemDetails` (RFC 7807) na borda, via `IExceptionHandler`
-  e um mapeador de `DomainError → status`. Catálogo em `spec.md` §8.
-- **Validação:** FluentValidation nos DTOs de entrada (formato de CPF, `seatNumber > 0`, `tripId`
-  GUID, nome não vazio). Regras de negócio ficam no domínio, não no validador.
-- **Privacidade (LGPD, RNF-11):** o `Cpf` é armazenado só com dígitos; um `ITypeConverter`/DTO de
-  saída o retorna mascarado (`***.***.**9-00`); um *enricher* do Serilog impede CPF em log. Segredos
-  ficam em variáveis de ambiente (`.env.example` versionado, `.env` ignorado).
+- **Erros:** os casos de uso devolvem `Result`; no endpoint, `ApiResults` mapeia
+  `DomainError → status HTTP` e produz `ProblemDetails` (RFC 7807). Exceções não previstas viram
+  `500` via `IExceptionHandler` (`GlobalExceptionHandler`). Catálogo em `spec.md` §8.
+- **Validação:** FluentValidation nos DTOs de entrada (`tripId` não vazio, nome não vazio e CPF
+  válido). Regras que dependem da viagem (assento fora do intervalo, viagem no passado) ficam no
+  domínio e retornam `422`, não `400`.
+- **Privacidade (LGPD, RNF-11):** o `Cpf` é armazenado só com dígitos; o DTO de saída
+  (`ReservationResponse`) o retorna mascarado via `Cpf.Masked` (`***.***.**7-35`); o CPF nunca é
+  escrito em log (o log de requisições registra método, rota e status, não corpos). Segredos ficam
+  em variáveis de ambiente (`.env.example` versionado, `.env` ignorado).
 
 ---
 
 ## 7. Observabilidade
-- `/health` (liveness) e `/health/ready` (readiness, testando o banco via health check do Npgsql).
-- Serilog com saída estruturada e `traceId` por requisição (propagado no `ProblemDetails`).
+- `/health` (liveness) e `/health/ready` (readiness, testando o banco via `AddDbContextCheck` do EF Core).
+- Serilog com saída estruturada e um identificador de correlação por requisição, exposto no
+  cabeçalho `X-Correlation-Id` e enriquecido no `LogContext`.
 
 ---
 
@@ -167,9 +175,9 @@ Pirâmide, do rápido/barato ao lento/caro (constituição P2):
 
 | Nível | Projeto | O que cobre | Infra |
 |---|---|---|---|
-| Unitário | `UnitTests` | CPF (T-01..05), código (T-06/07), assento (T-08), viagem passada (T-09), janela 2h (T-10..12) | nenhuma |
-| Integração | `IntegrationTests` | persistência, reserva (T-13/14), **concorrência (T-15)**, liberação no cancelamento (T-16/17) | Testcontainers + PostgreSQL |
-| Funcional | `FunctionalTests` | 6 endpoints ponta a ponta, ProblemDetails, `Location` (T-18..22) | WebApplicationFactory (+ Testcontainers) |
+| Unitário | `UnitTests` | CPF (T-01..05), código (T-06/07), assento (T-08), viagem passada (T-09), janela 2h (T-10..12), recancelamento (T-17) | nenhuma |
+| Integração | `IntegrationTests` | persistência, reserva (T-13/14), **concorrência (T-15)**, liberação no cancelamento (T-16) | Testcontainers + PostgreSQL |
+| Funcional | `FunctionalTests` | cenários principais ponta a ponta, ProblemDetails, `Location` (T-18..22) | WebApplicationFactory (+ Testcontainers) |
 | Arquitetura | `ArchitectureTests` | fronteiras de camada (T-23) | NetArchTest |
 
 **Relógio nos testes:** um `TimeProvider` fixo torna T-09..12 determinísticos.
@@ -189,13 +197,14 @@ precisam de Docker.
 
 ## 9. Empacotamento e execução
 
-- **Dockerfile** multi-stage (`sdk` → build/test → `aspnet` runtime), usuário **não-root**,
+- **Dockerfile** multi-stage (`sdk` faz o *build/publish* → `aspnet` runtime), usuário **não-root**,
   `.dockerignore` enxuto.
 - **docker-compose:** serviços `api` + `postgres`; o Postgres tem `healthcheck` e a API usa
   `depends_on: condition: service_healthy` — **evita o crash de subir antes do banco**.
 - **Config por ambiente:** connection string via variável (`ConnectionStrings__Default`); host
   `postgres` no compose, `localhost` sem Docker. Documentado no README nas duas formas.
-- **Sem Docker:** `dotnet ef database update` + `dotnet run`, apontando para um PostgreSQL local.
+- **Sem Docker:** `dotnet run` apontando para um PostgreSQL local — a aplicação aplica *migrations*
+  e *seed* no boot (passo a passo no README).
 
 ---
 

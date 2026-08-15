@@ -36,8 +36,8 @@
 
 ## Fase 3 — Casos de uso (Application)
 
-- [x] **TASK-10 — Consultas.** `ListRoutes`, `SearchTrips`, `GetTripDetails` (mapa de assentos). —
-  *cobre: RF-01..RF-03*
+- [x] **TASK-10 — Consultas de leitura.** Portas `IRouteQueries`/`ITripQueries`: listar rotas,
+  buscar viagens e detalhar a viagem (mapa de assentos). — *cobre: RF-01..RF-03*
 - [x] **TASK-11 — `CreateReservation`.** Validação + regras (RN-02, RN-06, RN-09) + inserção. —
   *cobre: T-13, T-14, **T-15** · RN-01, RN-02, RN-06*
 - [x] **TASK-12 — `GetReservation`.** Retorno com **CPF mascarado**. — *cobre: RF-05 · RNF-11*

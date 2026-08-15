@@ -17,5 +17,5 @@ Erros de domínio trafegam como `Result` na camada de Aplicação e são traduzi
 **Problem Details (RFC 7807)** apenas na borda HTTP. Exceções ficam para o realmente excepcional.
 
 ## Consequências
-- Fluxo previsível e performático; respostas de erro padronizadas com `traceId`.
+- Fluxo previsível e performático; respostas de erro padronizadas em Problem Details.
 - É necessário um mapeador de `DomainError → status HTTP` na borda.
