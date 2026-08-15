@@ -72,25 +72,33 @@ Esta opção roda a aplicação diretamente no seu computador. Exige instalar o 
 1. Instale o **[.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)**.
 2. Instale o **[PostgreSQL 16](https://www.postgresql.org/download/)**. Durante a instalação, defina
    uma senha para o usuário administrador (`postgres`) e conclua com as opções padrão.
-3. Crie o banco e o usuário que a aplicação espera. Abra o **SQL Shell (psql)** — instalado junto com
-   o PostgreSQL — conecte-se como usuário `postgres` e execute:
+3. Crie o banco e o usuário que a aplicação vai usar. Abra o **SQL Shell (psql)** — instalado junto
+   com o PostgreSQL — conecte-se como usuário `postgres` e execute (escolha a senha que preferir):
 
    ```sql
    CREATE USER onibus WITH PASSWORD 'onibus';
    CREATE DATABASE onibus OWNER onibus;
    ```
 
-   Esses valores correspondem à configuração padrão em
-   `src/OniBusExpress.Api/appsettings.json`. Para usar outro banco ou outras credenciais, defina a
-   variável de ambiente `ConnectionStrings__Default` antes de iniciar a aplicação.
-4. No terminal, dentro da pasta do projeto, execute:
+4. Informe à aplicação como conectar nesse banco pela variável de ambiente
+   `ConnectionStrings__Default` (nenhuma credencial fica no repositório) e rode a API.
+
+   No **Linux/macOS**:
 
    ```bash
+   export ConnectionStrings__Default="Host=localhost;Port=5432;Database=onibus;Username=onibus;Password=onibus"
    dotnet run --project src/OniBusExpress.Api
    ```
 
-   Aguarde a mensagem `Application started`. A aplicação cria as tabelas e insere os dados de exemplo
-   automaticamente.
+   No **Windows (PowerShell)**:
+
+   ```powershell
+   $env:ConnectionStrings__Default = "Host=localhost;Port=5432;Database=onibus;Username=onibus;Password=onibus"
+   dotnet run --project src/OniBusExpress.Api
+   ```
+
+   Use a **mesma senha** definida no passo 3. Aguarde a mensagem `Application started` — a aplicação
+   cria as tabelas e insere os dados de exemplo automaticamente.
 5. Abra no navegador: **<http://localhost:8080/swagger>**.
 6. Para **parar**: pressione `Ctrl+C` no terminal.
 

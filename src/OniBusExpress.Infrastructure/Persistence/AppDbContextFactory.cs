@@ -8,7 +8,7 @@ public sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
     public AppDbContext CreateDbContext(string[] args)
     {
         var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__Default")
-            ?? "Host=localhost;Port=5432;Database=onibus;Username=onibus;Password=onibus";
+            ?? "Host=localhost;Port=5432;Database=onibus;Username=onibus";
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseNpgsql(connectionString)
