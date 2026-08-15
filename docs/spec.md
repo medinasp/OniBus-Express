@@ -59,7 +59,7 @@ significativos e a portabilidade (com e sem Docker) como pilares deste MVP.
 | **Viagem** (`Trip`) | Uma partida programada de uma rota, com data/hora, preço e um total de assentos. |
 | **Assento** (`Seat`) | Posição numerada (1..N) dentro de uma viagem. A ocupação é derivada das reservas confirmadas. |
 | **Reserva** (`Reservation`) | Vínculo entre um passageiro e um assento de uma viagem, identificado por um código. |
-| **Passageiro** (`Passenger`) | Dados do titular da reserva (nome + CPF). Modelado como *value object* embutido na reserva. |
+| **Passageiro** | Titular da reserva (nome + CPF), representado na reserva por dois *value objects*: `PassengerName` e `Cpf`. No contrato HTTP de criação, ambos são agrupados no objeto `passenger`. |
 | **Código de reserva** | Identificador público, único e legível da reserva, no formato `ABC-12345`. |
 
 ### 3.1 Diagrama de entidades
@@ -162,7 +162,7 @@ Lista as rotas. Parâmetros opcionais de filtro: `origin`, `destination`. Pagina
 ### RF-02 · `GET /api/trips`
 Busca viagens. Parâmetros: `origin` (obrigatório), `destination` (obrigatório), `date` (obrigatório, `YYYY-MM-DD`). Paginação opcional: `page` (padrão 1) e `pageSize` (padrão 20, máximo 100).
 
-- **200 OK** — array de viagens (`id`, `origin`, `destination`, `departureAt`, `arrivalAt`, `price`, `availableSeats`). Lista vazia é `200`.
+- **200 OK** — array de viagens (`id`, `routeId`, `origin`, `destination`, `departureAt`, `arrivalAt`, `price`, `totalSeats`, `availableSeats`). Lista vazia é `200`.
 - **400 Bad Request** — parâmetros ausentes ou malformados.
 
 ### RF-03 · `GET /api/trips/{id}`
@@ -315,12 +315,12 @@ Cada caso é implementado no ciclo TDD (red → green → refactor).
   na borda HTTP. (ADR-0005)
 - **Cancelamento** via `POST /reservations/{code}/cancellation` (transição de estado, não `DELETE`).
   (ADR-0006)
-- **Uma reserva reserva exatamente um assento** para um passageiro. Compra de múltiplos assentos
+- **Cada reserva corresponde a exatamente um assento** para um passageiro. Compra de múltiplos assentos
   num único pedido está fora do escopo do MVP.
 - **Seed de dados:** o banco é populado com rotas e viagens de exemplo (incluindo viagem futura,
   viagem passada e viagem dentro da janela de 2h) para permitir a operação imediata da API via
   Swagger. Detalhado no `plan.md`.
 
-As decisões acima e suas alternativas ficam registradas como ADRs em `docs/adr/`. O documento de
-*system design* (geral e específico da aplicação), a estimativa de carga baseada no mercado de São
-Paulo, a análise de custo em nuvem e o plano de escala são tratados em `docs/system-design.md`.
+As decisões acima e suas alternativas ficam registradas como ADRs em `docs/adr/`. O *system design*
+(geral e específico da aplicação), a estimativa de carga baseada no mercado de São Paulo, a análise
+de custo em nuvem e o plano de escala são tratados no `plan.md` (§10–§12).
