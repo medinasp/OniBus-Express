@@ -14,7 +14,18 @@ public sealed record ReservationResponse(
     string PassengerName,
     string PassengerCpf,
     string Status,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt)
+{
+    public static ReservationResponse From(Reservation reservation) =>
+        new(
+            reservation.Code.Value,
+            reservation.TripId,
+            reservation.SeatNumber,
+            reservation.PassengerName.Value,
+            reservation.PassengerCpf.Masked,
+            reservation.Status.ToString(),
+            reservation.CreatedAt);
+}
 
 public sealed class CreateReservation
 {
@@ -65,7 +76,7 @@ public sealed class CreateReservation
             switch (outcome)
             {
                 case ReservationInsertResult.Inserted:
-                    return Map(reservation);
+                    return ReservationResponse.From(reservation);
                 case ReservationInsertResult.SeatAlreadyTaken:
                     return DomainError.SeatAlreadyTaken();
                 case ReservationInsertResult.CodeCollision:
@@ -75,14 +86,4 @@ public sealed class CreateReservation
 
         throw new InvalidOperationException("Não foi possível gerar um código de reserva único.");
     }
-
-    private static ReservationResponse Map(Reservation reservation) =>
-        new(
-            reservation.Code.Value,
-            reservation.TripId,
-            reservation.SeatNumber,
-            reservation.PassengerName.Value,
-            reservation.PassengerCpf.Masked,
-            reservation.Status.ToString(),
-            reservation.CreatedAt);
 }
