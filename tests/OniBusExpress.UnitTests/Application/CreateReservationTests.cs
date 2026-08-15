@@ -13,7 +13,7 @@ public class CreateReservationTests
         new(Guid.NewGuid(), Guid.NewGuid(), Agora.AddDays(1), Agora.AddDays(1).AddHours(6), 120m, totalSeats);
 
     private static CreateReservationCommand Comando(Guid tripId, int seat = 10) =>
-        new(tripId, seat, "Maria Silva", "111.444.777-35");
+        new(tripId, seat, "Maria Silva", "111.444.777-35", "maria@exemplo.com", null);
 
     private CreateReservation UseCase(ITripRepository trips, IReservationRepository reservas) =>
         new(trips, reservas, new FixedClock(Agora));
@@ -37,7 +37,20 @@ public class CreateReservationTests
     {
         var trip = TripFutura();
         var useCase = UseCase(new FakeTripRepository(trip), new FakeReservationRepository());
-        var comando = new CreateReservationCommand(trip.Id, 10, "Maria Silva", "11111111111");
+        var comando = new CreateReservationCommand(trip.Id, 10, "Maria Silva", "11111111111", "maria@exemplo.com", null);
+
+        var result = await useCase.HandleAsync(comando, CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(ErrorType.Validation, result.Error!.Type);
+    }
+
+    [Fact]
+    public async Task Handle_EmailInvalido_RetornaValidation()
+    {
+        var trip = TripFutura();
+        var useCase = UseCase(new FakeTripRepository(trip), new FakeReservationRepository());
+        var comando = new CreateReservationCommand(trip.Id, 10, "Maria Silva", "111.444.777-35", "sem-arroba", null);
 
         var result = await useCase.HandleAsync(comando, CancellationToken.None);
 
@@ -50,7 +63,7 @@ public class CreateReservationTests
     {
         var trip = TripFutura();
         var useCase = UseCase(new FakeTripRepository(trip), new FakeReservationRepository());
-        var comando = new CreateReservationCommand(trip.Id, 10, "   ", "111.444.777-35");
+        var comando = new CreateReservationCommand(trip.Id, 10, "   ", "111.444.777-35", "maria@exemplo.com", null);
 
         var result = await useCase.HandleAsync(comando, CancellationToken.None);
 

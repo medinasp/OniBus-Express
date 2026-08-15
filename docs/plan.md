@@ -119,7 +119,7 @@ sequenceDiagram
     participant A as API
     participant H as CreateReservationHandler
     participant DB as PostgreSQL
-    C->>A: POST /api/reservations {tripId, seat, passenger}
+    C->>A: POST /reservations {tripId, seat, passenger}
     A->>A: valida payload (FluentValidation) + CPF (mod-11)
     A->>H: comando
     H->>DB: carrega viagem

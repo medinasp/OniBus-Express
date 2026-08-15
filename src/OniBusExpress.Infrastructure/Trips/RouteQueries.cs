@@ -32,7 +32,7 @@ public sealed class RouteQueries : IRouteQueries
             .ThenBy(r => r.Destination)
             .Skip(pagination.Skip)
             .Take(pagination.PageSize)
-            .Select(r => new RouteDto(r.Id, r.Origin, r.Destination))
+            .Select(r => new RouteDto(r.Id, r.Origin, r.Destination, r.EstimatedDuration))
             .ToListAsync(cancellationToken);
     }
 }

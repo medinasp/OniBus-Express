@@ -12,6 +12,8 @@ public sealed class Reservation
     public int SeatNumber { get; private set; }
     public PassengerName PassengerName { get; private set; }
     public Cpf PassengerCpf { get; private set; }
+    public PassengerEmail PassengerEmail { get; private set; }
+    public DateOnly? PassengerDateOfBirth { get; private set; }
     public ReservationStatus Status { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset? CancelledAt { get; private set; }
@@ -23,6 +25,8 @@ public sealed class Reservation
         int seatNumber,
         PassengerName passengerName,
         Cpf passengerCpf,
+        PassengerEmail passengerEmail,
+        DateOnly? passengerDateOfBirth,
         ReservationStatus status,
         DateTimeOffset createdAt,
         DateTimeOffset? cancelledAt)
@@ -33,6 +37,8 @@ public sealed class Reservation
         SeatNumber = seatNumber;
         PassengerName = passengerName;
         PassengerCpf = passengerCpf;
+        PassengerEmail = passengerEmail;
+        PassengerDateOfBirth = passengerDateOfBirth;
         Status = status;
         CreatedAt = createdAt;
         CancelledAt = cancelledAt;
@@ -43,6 +49,8 @@ public sealed class Reservation
         int seatNumber,
         PassengerName passengerName,
         Cpf passengerCpf,
+        PassengerEmail passengerEmail,
+        DateOnly? passengerDateOfBirth,
         DateTimeOffset now)
     {
         if (trip.HasDeparted(now))
@@ -62,6 +70,8 @@ public sealed class Reservation
             seatNumber,
             passengerName,
             passengerCpf,
+            passengerEmail,
+            passengerDateOfBirth,
             ReservationStatus.Confirmed,
             now,
             null);
@@ -74,10 +84,12 @@ public sealed class Reservation
         int seatNumber,
         PassengerName passengerName,
         Cpf passengerCpf,
+        PassengerEmail passengerEmail,
+        DateOnly? passengerDateOfBirth,
         ReservationStatus status,
         DateTimeOffset createdAt,
         DateTimeOffset? cancelledAt) =>
-        new(id, code, tripId, seatNumber, passengerName, passengerCpf, status, createdAt, cancelledAt);
+        new(id, code, tripId, seatNumber, passengerName, passengerCpf, passengerEmail, passengerDateOfBirth, status, createdAt, cancelledAt);
 
     public Result Cancel(Trip trip, DateTimeOffset now)
     {

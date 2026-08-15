@@ -9,7 +9,7 @@ public static class ReservationEndpoints
 {
     public static IEndpointRouteBuilder MapReservationEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/api/reservations", async (
+        app.MapPost("/reservations", async (
                 CreateReservationRequest request,
                 IValidator<CreateReservationRequest> validator,
                 CreateReservation useCase,
@@ -24,11 +24,17 @@ public static class ReservationEndpoints
                         type: ApiResults.TypeBase + "validation-error");
                 }
 
-                var command = new CreateReservationCommand(request.TripId, request.SeatNumber, request.Passenger?.Name, request.Passenger?.Cpf);
+                var command = new CreateReservationCommand(
+                    request.TripId,
+                    request.SeatNumber,
+                    request.Passenger?.Name,
+                    request.Passenger?.Cpf,
+                    request.Passenger?.Email,
+                    request.Passenger?.DateOfBirth);
                 var result = await useCase.HandleAsync(command, cancellationToken);
 
                 return result.IsSuccess
-                    ? Results.Created($"/api/reservations/{result.Value!.Code}", result.Value)
+                    ? Results.Created($"/reservations/{result.Value!.Code}", result.Value)
                     : ApiResults.Problem(result.Error!);
             })
             .WithName("CreateReservation")
@@ -40,7 +46,7 @@ public static class ReservationEndpoints
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .WithTags("Reservas");
 
-        app.MapGet("/api/reservations/{code}", async (string code, GetReservation useCase, CancellationToken cancellationToken) =>
+        app.MapGet("/reservations/{code}", async (string code, GetReservation useCase, CancellationToken cancellationToken) =>
             {
                 var result = await useCase.HandleAsync(code, cancellationToken);
                 return result.IsSuccess ? Results.Ok(result.Value) : ApiResults.Problem(result.Error!);
@@ -51,13 +57,13 @@ public static class ReservationEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .WithTags("Reservas");
 
-        app.MapPost("/api/reservations/{code}/cancellation", async (string code, CancelReservation useCase, CancellationToken cancellationToken) =>
+        app.MapDelete("/reservations/{code}", async (string code, CancelReservation useCase, CancellationToken cancellationToken) =>
             {
                 var result = await useCase.HandleAsync(code, cancellationToken);
                 return result.IsSuccess ? Results.Ok(result.Value) : ApiResults.Problem(result.Error!);
             })
             .WithName("CancelReservation")
-            .WithSummary("Cancela uma reserva pelo código.")
+            .WithSummary("Cancela uma reserva pelo código (transição para Cancelled; a reserva permanece consultável).")
             .Produces<ReservationResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)

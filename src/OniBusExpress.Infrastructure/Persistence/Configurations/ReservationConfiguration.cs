@@ -36,6 +36,14 @@ public sealed class ReservationConfiguration : IEntityTypeConfiguration<Reservat
             .HasConversion(cpf => cpf.Value, value => Cpf.FromPersistence(value))
             .IsRequired();
 
+        builder.Property(r => r.PassengerEmail)
+            .HasColumnName("passenger_email")
+            .HasMaxLength(320)
+            .HasConversion(email => email.Value, value => PassengerEmail.FromPersistence(value))
+            .IsRequired();
+
+        builder.Property(r => r.PassengerDateOfBirth).HasColumnName("passenger_date_of_birth");
+
         builder.Property(r => r.Status)
             .HasColumnName("status")
             .HasMaxLength(20)

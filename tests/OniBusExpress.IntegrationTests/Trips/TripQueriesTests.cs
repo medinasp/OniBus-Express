@@ -71,7 +71,8 @@ public sealed class TripQueriesTests : IntegrationTestBase
 
         PassengerName.TryCreate("Carlos Dias", out var name);
         Cpf.TryCreate("11144477735", out var cpf);
-        var reserva = Reservation.Create(trip, 5, name!, cpf!, DateTimeOffset.UtcNow).Value!;
+        PassengerEmail.TryCreate("carlos@exemplo.com", out var email);
+        var reserva = Reservation.Create(trip, 5, name!, cpf!, email!, null, DateTimeOffset.UtcNow).Value!;
 
         await using (var db = Fixture.CreateContext())
         {

@@ -23,9 +23,9 @@ public sealed class DatabaseSeeder
 
         var now = _clock.GetUtcNow();
 
-        var spCampinas = new Route(SeedIds.RouteSpCampinas, "São Paulo", "Campinas");
-        var spRio = new Route(SeedIds.RouteSpRio, "São Paulo", "Rio de Janeiro");
-        var spSantos = new Route(SeedIds.RouteSpSantos, "São Paulo", "Santos");
+        var spCampinas = new Route(SeedIds.RouteSpCampinas, "São Paulo", "Campinas", TimeSpan.FromMinutes(90));
+        var spRio = new Route(SeedIds.RouteSpRio, "São Paulo", "Rio de Janeiro", TimeSpan.FromHours(6));
+        var spSantos = new Route(SeedIds.RouteSpSantos, "São Paulo", "Santos", TimeSpan.FromMinutes(75));
 
         var futura = new Trip(SeedIds.TripFutura, spCampinas.Id, now.AddDays(2), now.AddDays(2).AddHours(1), 45.90m, 40);
         var passada = new Trip(SeedIds.TripPassada, spRio.Id, now.AddDays(-1), now.AddDays(-1).AddHours(6), 120.00m, 44);

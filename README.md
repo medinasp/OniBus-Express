@@ -115,12 +115,12 @@ Prefixo base `/api`. Corpo em JSON, datas em ISO-8601 (UTC).
 
 | Método | Rota | Descrição |
 |---|---|---|
-| `GET` | `/api/routes` | Lista rotas (filtro opcional `origin`, `destination`). |
-| `GET` | `/api/trips` | Busca viagens por `origin`, `destination`, `date` (`YYYY-MM-DD`). |
-| `GET` | `/api/trips/{id}` | Detalhe da viagem com o **mapa de assentos**. |
-| `POST` | `/api/reservations` | Cria uma reserva. Retorna `201` + header `Location`. |
-| `GET` | `/api/reservations/{code}` | Recupera a reserva pelo código (CPF mascarado). |
-| `POST` | `/api/reservations/{code}/cancellation` | Cancela a reserva. |
+| `GET` | `/routes` | Lista rotas (filtro opcional `origin`, `destination`). |
+| `GET` | `/trips` | Busca viagens por `origin`, `destination`, `date` (`YYYY-MM-DD`). |
+| `GET` | `/trips/{id}` | Detalhe da viagem com o **mapa de assentos**. |
+| `POST` | `/reservations` | Cria uma reserva. Retorna `201` + header `Location`. |
+| `GET` | `/reservations/{code}` | Recupera a reserva pelo código (CPF mascarado). |
+| `DELETE` | `/reservations/{code}` | Cancela a reserva (soft-cancel: passa a `Cancelled`). |
 
 Erros seguem **Problem Details (RFC 7807)**, com status apropriado por caso: `400` (validação),
 `404` (inexistente), `409` (assento ocupado / reserva já cancelada), `422` (viagem no passado,
@@ -129,11 +129,12 @@ assento fora do intervalo, fora da janela de cancelamento).
 Exemplo — criar reserva:
 
 ```bash
-curl -X POST http://localhost:8080/api/reservations \
+curl -X POST http://localhost:8080/reservations \
   -H "Content-Type: application/json" \
   -d '{ "tripId": "b0000000-0000-0000-0000-000000000001",
         "seatNumber": 12,
-        "passenger": { "name": "Maria Silva", "cpf": "111.444.777-35" } }'
+        "passenger": { "name": "Maria Silva", "cpf": "111.444.777-35",
+                       "email": "maria@exemplo.com", "dateOfBirth": "1990-05-20" } }'
 ```
 
 ---
@@ -143,7 +144,7 @@ curl -X POST http://localhost:8080/api/reservations \
 Com a aplicação no ar, abra **<http://localhost:8080/swagger>**. Não é preciso instalar nada nem
 saber programar — dá para executar tudo pela tela:
 
-1. Clique em um endpoint para expandir (ex.: `POST /api/reservations`).
+1. Clique em um endpoint para expandir (ex.: `POST /reservations`).
 2. Clique no botão **"Try it out"**.
 3. Preencha os campos (use os **dados de exemplo** abaixo).
 4. Clique em **"Execute"**. A resposta — código de status e conteúdo — aparece logo abaixo.
@@ -157,10 +158,9 @@ saber programar — dá para executar tudo pela tela:
 | Viagem **partindo em < 2h** | `b0000000-0000-0000-0000-000000000003` | recusa de cancelamento fora da janela de 2h (`422`) |
 | CPF válido de exemplo | `111.444.777-35` ou `529.982.247-25` | preencher os dados do passageiro |
 
-Sugestão de roteiro: liste as rotas (`GET /api/routes`), veja o mapa de assentos da viagem futura
-(`GET /api/trips/{id}`), crie uma reserva (`POST /api/reservations`), consulte-a pelo código
-retornado (`GET /api/reservations/{code}`) e cancele-a
-(`POST /api/reservations/{code}/cancellation`).
+Sugestão de roteiro: liste as rotas (`GET /routes`), veja o mapa de assentos da viagem futura
+(`GET /trips/{id}`), crie uma reserva (`POST /reservations`), consulte-a pelo código
+retornado (`GET /reservations/{code}`) e cancele-a (`DELETE /reservations/{code}`).
 
 ### Provas de execução
 
@@ -267,7 +267,7 @@ As decisões estão registradas em [**ADRs**](docs/adr/):
 | [0003](docs/adr/0003-postgresql.md) | PostgreSQL como banco relacional |
 | [0004](docs/adr/0004-sem-repositorio-generico.md) | Sem repositório genérico |
 | [0005](docs/adr/0005-result-e-problem-details.md) | Erros via Result + Problem Details |
-| [0006](docs/adr/0006-cancelamento-via-post.md) | Cancelamento via `POST /cancellation` |
+| [0006](docs/adr/0006-cancelamento-via-delete.md) | Cancelamento via `DELETE` (soft-cancel) |
 | [0007](docs/adr/0007-codigo-de-reserva.md) | Geração do código de reserva |
 | [0008](docs/adr/0008-concorrencia-indice-unico-parcial.md) | Double-booking via índice único parcial |
 | [0009](docs/adr/0009-minimal-apis-em-modulos.md) | Minimal APIs organizadas em módulos |

@@ -17,7 +17,7 @@ public sealed class ReservationRepositoryTests : IntegrationTestBase
     private async Task<Trip> SeedTripAsync(int totalSeats = 40)
     {
         var partida = DateTimeOffset.UtcNow.AddDays(1);
-        var route = new Route(Guid.NewGuid(), "São Paulo", "Rio de Janeiro");
+        var route = new Route(Guid.NewGuid(), "São Paulo", "Rio de Janeiro", TimeSpan.FromHours(6));
         var trip = new Trip(Guid.NewGuid(), route.Id, partida, partida.AddHours(6), 120m, totalSeats);
 
         await using var db = Fixture.CreateContext();
@@ -31,7 +31,8 @@ public sealed class ReservationRepositoryTests : IntegrationTestBase
     {
         PassengerName.TryCreate("João Souza", out var name);
         Cpf.TryCreate("11144477735", out var cpf);
-        return Reservation.Create(trip, seat, name!, cpf!, DateTimeOffset.UtcNow).Value!;
+        PassengerEmail.TryCreate("joao@exemplo.com", out var email);
+        return Reservation.Create(trip, seat, name!, cpf!, email!, null, DateTimeOffset.UtcNow).Value!;
     }
 
     [Fact]
@@ -122,8 +123,9 @@ public sealed class ReservationRepositoryTests : IntegrationTestBase
 
         PassengerName.TryCreate("Ana Lima", out var name);
         Cpf.TryCreate("52998224725", out var cpf);
+        PassengerEmail.TryCreate("ana@exemplo.com", out var email);
         var duplicada = Reservation.Rehydrate(
-            Guid.NewGuid(), original.Code, trip.Id, 2, name!, cpf!,
+            Guid.NewGuid(), original.Code, trip.Id, 2, name!, cpf!, email!, null,
             ReservationStatus.Confirmed, DateTimeOffset.UtcNow, null);
 
         await using (var db = Fixture.CreateContext())

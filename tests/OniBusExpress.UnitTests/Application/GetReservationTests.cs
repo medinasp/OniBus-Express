@@ -15,7 +15,8 @@ public class GetReservationTests
         var trip = new Trip(Guid.NewGuid(), Guid.NewGuid(), Agora.AddDays(1), Agora.AddDays(1).AddHours(6), 120m, 40);
         PassengerName.TryCreate("Maria Silva", out var name);
         Cpf.TryCreate("11144477735", out var cpf);
-        return Reservation.Create(trip, 10, name!, cpf!, Agora).Value!;
+        PassengerEmail.TryCreate("maria@exemplo.com", out var email);
+        return Reservation.Create(trip, 10, name!, cpf!, email!, null, Agora).Value!;
     }
 
     [Fact]

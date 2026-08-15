@@ -8,6 +8,7 @@ namespace OniBusExpress.UnitTests.Reservations;
 public class ReservationTests
 {
     private static readonly DateTimeOffset Agora = new(2026, 8, 15, 12, 0, 0, TimeSpan.Zero);
+    private static readonly PassengerEmail Email = PassengerEmail.FromPersistence("maria@exemplo.com");
 
     private static Trip TripPartindoEm(DateTimeOffset departure, int totalSeats = 40) =>
         new(Guid.NewGuid(), Guid.NewGuid(), departure, departure.AddHours(6), 150m, totalSeats);
@@ -25,7 +26,7 @@ public class ReservationTests
         var trip = TripPartindoEm(Agora.AddDays(1));
         var (name, cpf) = Passageiro();
 
-        var result = Reservation.Create(trip, seatNumber: 12, name, cpf, Agora);
+        var result = Reservation.Create(trip, seatNumber: 12, name, cpf, Email, null, Agora);
 
         Assert.True(result.IsSuccess);
         var reserva = result.Value!;
@@ -43,7 +44,7 @@ public class ReservationTests
         var trip = TripPartindoEm(Agora.AddMinutes(-1));
         var (name, cpf) = Passageiro();
 
-        var result = Reservation.Create(trip, seatNumber: 12, name, cpf, Agora);
+        var result = Reservation.Create(trip, seatNumber: 12, name, cpf, Email, null, Agora);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ErrorType.Unprocessable, result.Error!.Type);
@@ -58,7 +59,7 @@ public class ReservationTests
         var trip = TripPartindoEm(Agora.AddDays(1), totalSeats: 40);
         var (name, cpf) = Passageiro();
 
-        var result = Reservation.Create(trip, seat, name, cpf, Agora);
+        var result = Reservation.Create(trip, seat, name, cpf, Email, null, Agora);
 
         Assert.False(result.IsSuccess);
         Assert.Equal("seat-out-of-range", result.Error!.Code);
@@ -69,7 +70,7 @@ public class ReservationTests
     {
         var trip = TripPartindoEm(Agora.AddDays(1));
         var (name, cpf) = Passageiro();
-        var reserva = Reservation.Create(trip, 12, name, cpf, Agora).Value!;
+        var reserva = Reservation.Create(trip, 12, name, cpf, Email, null, Agora).Value!;
 
         var result = reserva.Cancel(trip, Agora);
 
@@ -83,7 +84,7 @@ public class ReservationTests
     {
         var trip = TripPartindoEm(Agora.AddDays(1));
         var (name, cpf) = Passageiro();
-        var reserva = Reservation.Create(trip, 12, name, cpf, Agora).Value!;
+        var reserva = Reservation.Create(trip, 12, name, cpf, Email, null, Agora).Value!;
         reserva.Cancel(trip, Agora);
 
         var result = reserva.Cancel(trip, Agora);
@@ -97,7 +98,7 @@ public class ReservationTests
     {
         var trip = TripPartindoEm(Agora.AddHours(1));
         var (name, cpf) = Passageiro();
-        var reserva = Reservation.Create(trip, 12, name, cpf, Agora.AddDays(-1)).Value!;
+        var reserva = Reservation.Create(trip, 12, name, cpf, Email, null, Agora.AddDays(-1)).Value!;
 
         var result = reserva.Cancel(trip, Agora);
 

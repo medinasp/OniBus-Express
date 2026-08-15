@@ -14,5 +14,6 @@ public sealed class RouteConfiguration : IEntityTypeConfiguration<Route>
         builder.Property(r => r.Id).HasColumnName("id");
         builder.Property(r => r.Origin).HasColumnName("origin").HasMaxLength(80).IsRequired();
         builder.Property(r => r.Destination).HasColumnName("destination").HasMaxLength(80).IsRequired();
+        builder.Property(r => r.EstimatedDuration).HasColumnName("estimated_duration");
     }
 }

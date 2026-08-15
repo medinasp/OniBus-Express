@@ -14,7 +14,8 @@ public class CancelReservationTests
     {
         PassengerName.TryCreate("Maria Silva", out var name);
         Cpf.TryCreate("11144477735", out var cpf);
-        return Reservation.Create(trip, 10, name!, cpf!, Agora.AddDays(-2)).Value!;
+        PassengerEmail.TryCreate("maria@exemplo.com", out var email);
+        return Reservation.Create(trip, 10, name!, cpf!, email!, null, Agora.AddDays(-2)).Value!;
     }
 
     private CancelReservation UseCase(Trip? trip, FakeReservationRepository reservas) =>

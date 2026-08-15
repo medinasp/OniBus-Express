@@ -20,6 +20,10 @@ public sealed class CreateReservationRequestValidator : AbstractValidator<Create
             RuleFor(x => x.Passenger!.Cpf)
                 .Must(cpf => Cpf.TryCreate(cpf, out _))
                 .WithMessage("O CPF do passageiro é inválido.");
+
+            RuleFor(x => x.Passenger!.Email)
+                .Must(email => PassengerEmail.TryCreate(email, out _))
+                .WithMessage("O e-mail do passageiro é inválido.");
         });
     }
 }

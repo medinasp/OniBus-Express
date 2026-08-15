@@ -55,11 +55,11 @@ significativos e a portabilidade (com e sem Docker) como pilares deste MVP.
 
 | Termo | Definição |
 |---|---|
-| **Rota** (`Route`) | Par origem→destino operado pela empresa (ex.: São Paulo → Campinas). |
+| **Rota** (`Route`) | Par origem→destino operado pela empresa (ex.: São Paulo → Campinas), com uma **duração estimada** do trajeto. |
 | **Viagem** (`Trip`) | Uma partida programada de uma rota, com data/hora, preço e um total de assentos. |
 | **Assento** (`Seat`) | Posição numerada (1..N) dentro de uma viagem. A ocupação é derivada das reservas confirmadas. |
 | **Reserva** (`Reservation`) | Vínculo entre um passageiro e um assento de uma viagem, identificado por um código. |
-| **Passageiro** | Titular da reserva (nome + CPF), representado na reserva por dois *value objects*: `PassengerName` e `Cpf`. No contrato HTTP de criação, ambos são agrupados no objeto `passenger`. |
+| **Passageiro** | Titular da reserva: **nome, CPF, e-mail** (obrigatórios) e **data de nascimento** (opcional). Nome, CPF e e-mail são *value objects* (`PassengerName`, `Cpf`, `PassengerEmail`); no contrato HTTP de criação são agrupados no objeto `passenger`. |
 | **Código de reserva** | Identificador público, único e legível da reserva, no formato `ABC-12345`. |
 
 ### 3.1 Diagrama de entidades
@@ -73,6 +73,7 @@ erDiagram
         uuid id PK
         string origin
         string destination
+        interval estimated_duration
     }
     TRIP {
         uuid id PK
@@ -89,6 +90,8 @@ erDiagram
         int seat_number
         string passenger_name
         string passenger_cpf
+        string passenger_email
+        date passenger_date_of_birth "nullable"
         string status "Confirmed | Cancelled"
         timestamptz created_at
         timestamptz cancelled_at "nullable"
@@ -153,45 +156,45 @@ erDiagram
 
 Prefixo base: `/api`. Formato: JSON. Datas em ISO-8601 UTC.
 
-### RF-01 · `GET /api/routes`
+### RF-01 · `GET /routes`
 Lista as rotas. Parâmetros opcionais de filtro: `origin`, `destination`. Paginação opcional:
 `page` (padrão 1) e `pageSize` (padrão 20, máximo 100).
 
-- **200 OK** — array de rotas (`id`, `origin`, `destination`). Lista vazia continua sendo `200`.
+- **200 OK** — array de rotas (`id`, `origin`, `destination`, `estimatedDuration`). Lista vazia continua sendo `200`.
 
-### RF-02 · `GET /api/trips`
+### RF-02 · `GET /trips`
 Busca viagens. Parâmetros: `origin` (obrigatório), `destination` (obrigatório), `date` (obrigatório, `YYYY-MM-DD`). Paginação opcional: `page` (padrão 1) e `pageSize` (padrão 20, máximo 100).
 
 - **200 OK** — array de viagens (`id`, `routeId`, `origin`, `destination`, `departureAt`, `arrivalAt`, `price`, `totalSeats`, `availableSeats`). Lista vazia é `200`.
 - **400 Bad Request** — parâmetros ausentes ou malformados.
 
-### RF-03 · `GET /api/trips/{id}`
+### RF-03 · `GET /trips/{id}`
 Detalhe de uma viagem com o mapa de assentos.
 
 - **200 OK** — dados da viagem + lista de assentos com estado (`number`, `available`).
 - **404 Not Found** — viagem inexistente.
 
-### RF-04 · `POST /api/reservations`
+### RF-04 · `POST /reservations`
 Cria uma reserva.
 
-Corpo: `{ "tripId": "...", "seatNumber": 12, "passenger": { "name": "...", "cpf": "..." } }`
+Corpo: `{ "tripId": "...", "seatNumber": 12, "passenger": { "name": "...", "cpf": "...", "email": "...", "dateOfBirth": "1990-05-20" } }`
+(o `dateOfBirth` é opcional; nome, CPF e e-mail são obrigatórios).
 
-- **201 Created** — reserva criada; retorna o recurso e o header `Location: /api/reservations/{code}`.
-- **400 Bad Request** — payload inválido, CPF inválido (RN-03), nome vazio (RN-09).
+- **201 Created** — reserva criada; retorna o recurso e o header `Location: /reservations/{code}`.
+- **400 Bad Request** — payload inválido, CPF inválido (RN-03), nome vazio (RN-09), e-mail inválido.
 - **404 Not Found** — viagem inexistente.
 - **409 Conflict** — assento já ocupado (RN-01).
 - **422 Unprocessable Entity** — viagem no passado (RN-02) ou assento fora do intervalo (RN-06).
 
-### RF-05 · `GET /api/reservations/{code}`
+### RF-05 · `GET /reservations/{code}`
 Recupera a reserva pelo código.
 
 - **200 OK** — dados da reserva, com o **CPF mascarado** (RNF-11).
 - **404 Not Found** — código inexistente.
 
-### RF-06 · `POST /api/reservations/{code}/cancellation`
-Cancela a reserva. Modelado como criação de um recurso de *cancelamento* sob a reserva, e não
-como `DELETE`, porque o cancelamento é uma **transição de estado**: a reserva não é removida,
-passa a `Cancelled` e continua consultável (decisão registrada em ADR-0006).
+### RF-06 · `DELETE /reservations/{code}`
+Cancela a reserva. É um **soft-cancel**: a reserva não é removida, transita para `Cancelled` e
+continua consultável (decisão registrada em ADR-0006).
 
 - **200 OK** — cancelada com sucesso; retorna a reserva no estado `Cancelled` (RN-07).
 - **404 Not Found** — código inexistente.
@@ -313,7 +316,7 @@ Cada caso é implementado no ciclo TDD (red → green → refactor).
   (ADR-0001, ADR-0004)
 - **Erros de domínio** trafegam como *Result* na aplicação e são traduzidos para *Problem Details*
   na borda HTTP. (ADR-0005)
-- **Cancelamento** via `POST /reservations/{code}/cancellation` (transição de estado, não `DELETE`).
+- **Cancelamento** via `DELETE /reservations/{code}` como *soft-cancel* (transição para `Cancelled`, sem remoção).
   (ADR-0006)
 - **Cada reserva corresponde a exatamente um assento** para um passageiro. Compra de múltiplos assentos
   num único pedido está fora do escopo do MVP.

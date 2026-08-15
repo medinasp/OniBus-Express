@@ -5,7 +5,13 @@ using OniBusExpress.Domain.Reservations;
 
 namespace OniBusExpress.Application.Reservations;
 
-public sealed record CreateReservationCommand(Guid TripId, int SeatNumber, string? PassengerName, string? PassengerCpf);
+public sealed record CreateReservationCommand(
+    Guid TripId,
+    int SeatNumber,
+    string? PassengerName,
+    string? PassengerCpf,
+    string? PassengerEmail,
+    DateOnly? PassengerDateOfBirth);
 
 public sealed record ReservationResponse(
     string Code,
@@ -13,6 +19,8 @@ public sealed record ReservationResponse(
     int SeatNumber,
     string PassengerName,
     string PassengerCpf,
+    string PassengerEmail,
+    DateOnly? PassengerDateOfBirth,
     string Status,
     DateTimeOffset CreatedAt)
 {
@@ -23,6 +31,8 @@ public sealed record ReservationResponse(
             reservation.SeatNumber,
             reservation.PassengerName.Value,
             reservation.PassengerCpf.Masked,
+            reservation.PassengerEmail.Value,
+            reservation.PassengerDateOfBirth,
             reservation.Status.ToString(),
             reservation.CreatedAt);
 }
@@ -54,6 +64,11 @@ public sealed class CreateReservation
             return DomainError.Validation("Nome do passageiro é obrigatório.");
         }
 
+        if (!PassengerEmail.TryCreate(command.PassengerEmail, out var email))
+        {
+            return DomainError.Validation("E-mail do passageiro é inválido.");
+        }
+
         var trip = await _trips.GetByIdAsync(command.TripId, cancellationToken);
         if (trip is null)
         {
@@ -64,7 +79,7 @@ public sealed class CreateReservation
 
         for (var attempt = 0; attempt < MaxCodeGenerationAttempts; attempt++)
         {
-            var creation = Reservation.Create(trip, command.SeatNumber, name!, cpf!, now);
+            var creation = Reservation.Create(trip, command.SeatNumber, name!, cpf!, email!, command.PassengerDateOfBirth, now);
             if (!creation.IsSuccess)
             {
                 return creation.Error!;

@@ -1,6 +1,6 @@
 namespace OniBusExpress.Application.Trips;
 
-public sealed record RouteDto(Guid Id, string Origin, string Destination);
+public sealed record RouteDto(Guid Id, string Origin, string Destination, TimeSpan EstimatedDuration);
 
 public sealed record TripSearch(string? Origin, string? Destination, DateOnly? Date);
 

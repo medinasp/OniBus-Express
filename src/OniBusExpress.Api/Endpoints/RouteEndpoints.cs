@@ -7,7 +7,7 @@ public static class RouteEndpoints
 {
     public static IEndpointRouteBuilder MapRouteEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/routes", async (string? origin, string? destination, int? page, int? pageSize, IRouteQueries queries, CancellationToken cancellationToken) =>
+        app.MapGet("/routes", async (string? origin, string? destination, int? page, int? pageSize, IRouteQueries queries, CancellationToken cancellationToken) =>
                 Results.Ok(await queries.ListAsync(origin, destination, Pagination.From(page, pageSize), cancellationToken)))
             .WithName("ListRoutes")
             .WithSummary("Lista as rotas disponíveis.")

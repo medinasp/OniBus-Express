@@ -10,7 +10,7 @@ public static class TripEndpoints
 {
     public static IEndpointRouteBuilder MapTripEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/trips", async (string? origin, string? destination, string? date, int? page, int? pageSize, ITripQueries queries, CancellationToken cancellationToken) =>
+        app.MapGet("/trips", async (string? origin, string? destination, string? date, int? page, int? pageSize, ITripQueries queries, CancellationToken cancellationToken) =>
             {
                 if (string.IsNullOrWhiteSpace(origin) || string.IsNullOrWhiteSpace(destination) || string.IsNullOrWhiteSpace(date))
                 {
@@ -39,7 +39,7 @@ public static class TripEndpoints
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .WithTags("Viagens");
 
-        app.MapGet("/api/trips/{id:guid}", async (Guid id, ITripQueries queries, CancellationToken cancellationToken) =>
+        app.MapGet("/trips/{id:guid}", async (Guid id, ITripQueries queries, CancellationToken cancellationToken) =>
             {
                 var details = await queries.GetDetailsAsync(id, cancellationToken);
                 return details is null
