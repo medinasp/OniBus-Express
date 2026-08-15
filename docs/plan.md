@@ -112,7 +112,7 @@ CREATE UNIQUE INDEX ux_reservation_active_seat
 ```mermaid
 sequenceDiagram
     participant C as Cliente
-    participant A as API (endpoint)
+    participant A as API
     participant H as CreateReservationHandler
     participant DB as PostgreSQL
     C->>A: POST /api/reservations {tripId, seat, passenger}
@@ -205,11 +205,11 @@ precisam de Docker.
 
 ```mermaid
 flowchart LR
-    Client[Cliente / Swagger] -->|HTTP/JSON| API[ASP.NET Core API<br/>stateless]
-    API --> App[Casos de uso]
-    App --> DB[(PostgreSQL 16)]
-    API -.-> Health[/health/]
-    API -.-> OpenAPI[/swagger/]
+    Client["Cliente / Swagger"] -->|"HTTP / JSON"| API["ASP.NET Core API (stateless)"]
+    API --> App["Casos de uso"]
+    App --> DB[("PostgreSQL 16")]
+    API -.-> Health["/health"]
+    API -.-> OpenAPI["/swagger"]
 ```
 
 A API é **stateless** — nenhum estado de sessão em memória — o que a torna escalável
@@ -220,33 +220,33 @@ a fronteira de consistência (índice único).
 
 ```mermaid
 flowchart TB
-    User[Cliente web / mobile] --> CDN[DNS + CDN]
-    CDN --> GW[API Gateway / Load Balancer<br/>TLS · rate limiting · roteamento]
+    User["Cliente web / mobile"] --> CDN["DNS + CDN"]
+    CDN --> GW["API Gateway / Load Balancer<br/>TLS, rate limiting, roteamento"]
 
-    subgraph AS [Camada de aplicação — stateless, auto-scaling]
-        API1[API #1]
-        API2[API #2]
-        APIN[API #N]
+    subgraph AS [Camada de aplicação auto-scaling]
+        API1["API 1"]
+        API2["API 2"]
+        APIN["API N"]
     end
     GW --> API1
     GW --> API2
     GW --> APIN
 
-    API1 --> Cache[(Redis<br/>cache de leitura · TTL curto)]
+    API1 --> Cache[("Redis<br/>cache de leitura, TTL curto")]
     API2 --> Cache
     APIN --> Cache
 
-    API1 --> PG[(PostgreSQL primário<br/>ESCRITAS · integridade)]
+    API1 --> PG[("PostgreSQL primário<br/>escritas, integridade")]
     API2 --> PG
     APIN --> PG
 
-    API1 --> RR[(Réplicas de leitura<br/>buscas)]
+    API1 --> RR[("Réplicas de leitura<br/>buscas")]
     APIN --> RR
     PG --> RR
-    PG --> Bak[(Backups / PITR)]
+    PG --> Bak[("Backups / PITR")]
 
-    API2 -. eventos .-> Q[[Fila assíncrona<br/>amortece picos de escrita / notificações]]
-    AS -. métricas · logs · traces .-> Obs[Observabilidade]
+    API2 -.->|eventos| Q[["Fila assíncrona<br/>picos de escrita, notificações"]]
+    AS -.->|"métricas, logs, traces"| Obs["Observabilidade"]
 ```
 
 **Fluxo de requisição:**
