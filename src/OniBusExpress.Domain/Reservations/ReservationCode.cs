@@ -75,4 +75,9 @@ public sealed record ReservationCode
         code = new ReservationCode(new string(buffer));
         return true;
     }
+
+    public static ReservationCode FromPersistence(string value) =>
+        TryParse(value, out var code)
+            ? code!
+            : throw new InvalidOperationException("Código de reserva persistido em formato inválido.");
 }

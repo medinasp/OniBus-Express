@@ -22,6 +22,11 @@ public sealed record Cpf
         return true;
     }
 
+    public static Cpf FromPersistence(string value) =>
+        TryCreate(value, out var cpf)
+            ? cpf!
+            : throw new InvalidOperationException("CPF persistido em formato inválido.");
+
     private static string? Normalize(string? input)
     {
         if (string.IsNullOrWhiteSpace(input))

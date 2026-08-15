@@ -18,4 +18,9 @@ public sealed record PassengerName
         name = new PassengerName(input.Trim());
         return true;
     }
+
+    public static PassengerName FromPersistence(string value) =>
+        TryCreate(value, out var name)
+            ? name!
+            : throw new InvalidOperationException("Nome de passageiro persistido em formato inválido.");
 }
