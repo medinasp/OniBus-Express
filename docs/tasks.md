@@ -49,9 +49,9 @@
 - [x] **TASK-14 — Endpoints Minimal API em módulos.** Os 6 endpoints como adaptadores finos;
   `FluentValidation`; `IExceptionHandler` → **Problem Details (RFC 7807)**; status HTTP por caso. —
   *cobre: T-18..T-22 · toda a seção 7 do spec*
-- [x] **TASK-15 — Documentação e observabilidade.** Swagger/OpenAPI com XML docs nos endpoints;
-  `/health` e `/health/ready`; Serilog estruturado + id de correlação; CPF fora do log. —
-  *cobre: RNF-06, RNF-09, RNF-11*
+- [x] **TASK-15 — Documentação e observabilidade.** Swagger/OpenAPI com metadados nos endpoints
+  (resumo, descrição e códigos de resposta); `/health` e `/health/ready`; Serilog estruturado + id
+  de correlação; CPF fora do log. — *cobre: RNF-06, RNF-09, RNF-11*
 
 ## Fase 5 — Qualidade e entrega
 

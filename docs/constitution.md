@@ -48,9 +48,10 @@ listagens, ausência de alocação supérflua no caminho quente.
 Health check, logs estruturados e um identificador de correlação por requisição existem desde o
 primeiro endpoint.
 
-### P9 — Comentários apenas de documentação
-O código **não leva comentários**, exceto os de documentação (`///` XML) nos endpoints, que devem
-ser completos o bastante para operar a API pelo Swagger.
+### P9 — Código sem comentários
+O código **não leva comentários**; nomes claros e tipos expressivos bastam. A documentação dos
+endpoints necessária para operar a API pelo Swagger é expressa por **metadados OpenAPI** (resumo,
+descrição e códigos de resposta), não por comentários.
 
 ### P10 — Reprodutibilidade
 O projeto executa de duas formas: com Docker (`docker compose up`) e sem Docker (`dotnet run`
