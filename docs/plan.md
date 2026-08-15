@@ -172,12 +172,12 @@ Pirâmide, do rápido/barato ao lento/caro (constituição P2):
 | Funcional | `FunctionalTests` | 6 endpoints ponta a ponta, ProblemDetails, `Location` (T-18..22) | WebApplicationFactory (+ Testcontainers) |
 | Arquitetura | `ArchitectureTests` | fronteiras de camada (T-23) | NetArchTest |
 
-**Relógio nos testes:** `TimeProvider` falso (`FakeTimeProvider`) torna T-09..12 determinísticos.
+**Relógio nos testes:** um `TimeProvider` fixo torna T-09..12 determinísticos.
 **Cobertura:** coverlet + ReportGenerator na própria execução dos testes, foco em RN-01..08 (não
-perseguir 100%). O relatório é gerado localmente pelo `dotnet test`.
-**CI (GitHub Actions) — extra opcional, não exigido pelo enunciado:** automatiza
-*restore → build → test → cobertura* a cada push, como bônus de maturidade. A execução primária,
-documentada no README, é **local** via `dotnet test`.
+perseguir 100%). O relatório é gerado pelo `dotnet test`, tanto localmente quanto no CI.
+**Integração contínua (GitHub Actions):** o pipeline automatiza
+*restore → build → test → cobertura* a cada push. A mesma suíte também roda **localmente** via
+`dotnet test`, como documentado no README.
 
 **Onde os testes rodam:** a suíte é executada por `dotnet test`, não pelo `docker-compose`. O
 `docker-compose` serve para **operar a aplicação**; os testes de integração/funcionais sobem seu
