@@ -18,7 +18,10 @@ public static class ReservationEndpoints
                 var validation = await validator.ValidateAsync(request, cancellationToken);
                 if (!validation.IsValid)
                 {
-                    return Results.ValidationProblem(validation.ToDictionary());
+                    return Results.ValidationProblem(
+                        validation.ToDictionary(),
+                        title: "Requisição inválida",
+                        type: ApiResults.TypeBase + "validation-error");
                 }
 
                 var command = new CreateReservationCommand(request.TripId, request.SeatNumber, request.Passenger?.Name, request.Passenger?.Cpf);
