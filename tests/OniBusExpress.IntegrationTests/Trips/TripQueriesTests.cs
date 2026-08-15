@@ -28,7 +28,7 @@ public sealed class TripQueriesTests : IntegrationTestBase
         await SeedAsync();
 
         await using var db = Fixture.CreateContext();
-        var rotas = await new RouteQueries(db).ListAsync(CancellationToken.None);
+        var rotas = await new RouteQueries(db).ListAsync(null, null, CancellationToken.None);
 
         Assert.Equal(3, rotas.Count);
     }

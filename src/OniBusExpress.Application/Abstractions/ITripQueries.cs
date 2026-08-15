@@ -4,7 +4,7 @@ namespace OniBusExpress.Application.Abstractions;
 
 public interface IRouteQueries
 {
-    Task<IReadOnlyList<RouteDto>> ListAsync(CancellationToken cancellationToken);
+    Task<IReadOnlyList<RouteDto>> ListAsync(string? origin, string? destination, CancellationToken cancellationToken);
 }
 
 public interface ITripQueries
