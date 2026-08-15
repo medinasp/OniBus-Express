@@ -289,8 +289,8 @@ de ~15–20 mi/ano.
 - Sustentar **500 req/s (~30k req/min)** com **p95 < 200 ms** nas leituras e **< 300 ms** na
   reserva, mantendo a garantia de não-duplicidade sob rajada de dezenas de escritas/s.
 - A API escala horizontalmente; o gargalo é o PostgreSQL, mitigado por cache de leitura e réplicas.
-- **Rate limiting** nos endpoints de escrita (token bucket por IP) protege contra rajada/abuso e
-  materializa esse limite em código.
+- **Rate limiting** nos endpoints de escrita (token bucket por IP) protegeria contra rajada/abuso —
+  previsto para essa escala (ver §12), fora do escopo do MVP.
 
 ---
 

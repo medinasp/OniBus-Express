@@ -302,6 +302,7 @@ exige exatamente **1 sucesso e N-1 conflitos** (ver ADR-0008).
   respostas e mantido fora dos logs.
 - Problem Details (RFC 7807), validação de entrada, health checks, log estruturado com correlação e
   documentação Swagger.
+- Paginação nas listagens (`page`/`pageSize`) e leituras sem *tracking* com projeções.
 - Empacotamento com Docker (imagem multi-stage, usuário não-root) e execução com/sem contêiner.
 - Suíte de testes: unitários, integração (Testcontainers), funcionais (ponta a ponta) e de
   arquitetura.
@@ -359,7 +360,7 @@ docs/                            spec, plan, constitution, ADRs
 ## Melhorias futuras
 
 - Autenticação/autorização e limitação de taxa (*rate limiting*).
-- Paginação e filtros adicionais nas listagens.
+- Versionamento explícito da API e paginação por cursor (*keyset*) com metadados de total.
 - Telemetria (métricas e *tracing* via OpenTelemetry).
 - Publicação de imagem em *registry* e *deploy* automatizado a partir do CI.
 

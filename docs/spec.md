@@ -154,12 +154,13 @@ erDiagram
 Prefixo base: `/api`. Formato: JSON. Datas em ISO-8601 UTC.
 
 ### RF-01 · `GET /api/routes`
-Lista as rotas. Parâmetros opcionais de filtro: `origin`, `destination`.
+Lista as rotas. Parâmetros opcionais de filtro: `origin`, `destination`. Paginação opcional:
+`page` (padrão 1) e `pageSize` (padrão 20, máximo 100).
 
 - **200 OK** — array de rotas (`id`, `origin`, `destination`). Lista vazia continua sendo `200`.
 
 ### RF-02 · `GET /api/trips`
-Busca viagens. Parâmetros: `origin` (obrigatório), `destination` (obrigatório), `date` (obrigatório, `YYYY-MM-DD`).
+Busca viagens. Parâmetros: `origin` (obrigatório), `destination` (obrigatório), `date` (obrigatório, `YYYY-MM-DD`). Paginação opcional: `page` (padrão 1) e `pageSize` (padrão 20, máximo 100).
 
 - **200 OK** — array de viagens (`id`, `origin`, `destination`, `departureAt`, `arrivalAt`, `price`, `availableSeats`). Lista vazia é `200`.
 - **400 Bad Request** — parâmetros ausentes ou malformados.
@@ -261,9 +262,9 @@ Essa abordagem é correta sob qualquer nível de concorrência e é validada por
 integração que dispara múltiplas requisições paralelas contra o mesmo assento em um PostgreSQL
 real (Testcontainers), exigindo que exatamente uma vença e as demais recebam `409`.
 
-Como efeito colateral, essa mesma restrição oferece **idempotência** contra envios duplicados sem
-custo adicional: um duplo-clique ou uma retentativa da mesma reserva não gera duplicidade — a
-tentativa repetida do mesmo assento recebe `409`, jamais uma segunda reserva.
+Como efeito colateral, essa mesma restrição oferece **proteção contra envios duplicados**
+(*double-submit*) sem custo adicional: um duplo-clique ou uma retentativa da mesma reserva não gera
+duplicidade — a tentativa repetida do mesmo assento recebe `409`, jamais uma segunda reserva.
 
 ---
 
