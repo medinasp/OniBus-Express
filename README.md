@@ -154,6 +154,56 @@ Sugestão de roteiro: liste as rotas (`GET /api/routes`), veja o mapa de assento
 retornado (`GET /api/reservations/{code}`) e cancele-a
 (`POST /api/reservations/{code}/cancellation`).
 
+### Provas de execução
+
+As capturas abaixo mostram cada endpoint executado pela tela do Swagger, exibindo o **pedido
+enviado** (comando `curl`/parâmetros) e a **resposta do servidor** (código de status, corpo e
+cabeçalhos). Note o CPF sempre **mascarado** nas respostas e o cabeçalho `Location` na criação.
+
+**Caminhos de sucesso**
+
+Criar reserva — `201 Created`, com `Location` e CPF mascarado:
+
+![Criar reserva retornando 201](docs/img/01-criar-reserva-201.jpg)
+
+Consultar reserva pelo código — `200 OK`, CPF mascarado:
+
+![Consultar reserva retornando 200](docs/img/02-consultar-reserva-200.jpg)
+
+Cancelar reserva — `200 OK`, estado `Cancelled`:
+
+![Cancelar reserva retornando 200](docs/img/03-cancelar-reserva-200.jpg)
+
+Buscar viagens por origem, destino e data — `200 OK`:
+
+![Buscar viagens retornando 200](docs/img/10-buscar-viagens-200.jpg)
+
+Detalhe da viagem com o mapa de assentos — `200 OK`:
+
+![Detalhe da viagem retornando 200](docs/img/08-detalhe-viagem-200.jpg)
+
+Listar rotas — `200 OK`:
+
+![Listar rotas retornando 200](docs/img/04-listar-rotas-200.jpg)
+
+**Caminhos de erro**
+
+CPF inválido — `400 Bad Request` (Problem Details com erro por campo):
+
+![CPF inválido retornando 400](docs/img/05-cpf-invalido-400.jpg)
+
+Viagem inexistente — `404 Not Found`:
+
+![Viagem inexistente retornando 404](docs/img/09-viagem-inexistente-404.jpg)
+
+Assento já reservado — `409 Conflict` (prevenção de *double-booking*, RN-01):
+
+![Assento já reservado retornando 409](docs/img/07-assento-ocupado-409.jpg)
+
+Reserva em viagem no passado — `422 Unprocessable Entity`:
+
+![Viagem no passado retornando 422](docs/img/06-viagem-passada-422.jpg)
+
 ---
 
 ## Tecnologias e justificativa
