@@ -6,6 +6,8 @@ public sealed record Cpf
 
     public string Value { get; }
 
+    public string Masked => $"***.***.**{Value[8]}-{Value[9]}{Value[10]}";
+
     private Cpf(string value) => Value = value;
 
     public static bool TryCreate(string? input, out Cpf? cpf)

@@ -73,6 +73,14 @@ public class CpfTests
     }
 
     [Fact]
+    public void Masked_ExpoeApenasOsUltimosDigitos()
+    {
+        Cpf.TryCreate("11144477735", out var cpf);
+
+        Assert.Equal("***.***.**7-35", cpf!.Masked);
+    }
+
+    [Fact]
     public void Cpfs_ComMesmoValor_SaoIguais()
     {
         Cpf.TryCreate("111.444.777-35", out var a);
