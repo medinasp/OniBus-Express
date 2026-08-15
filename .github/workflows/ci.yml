@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build-test:
+    name: Build e testes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restaurar dependências
+        run: dotnet restore
+
+      - name: Compilar
+        run: dotnet build --no-restore -c Release
+
+      - name: Testar (com cobertura)
+        run: >
+          dotnet test --no-build -c Release
+          --collect:"XPlat Code Coverage"
+          --settings coverlet.runsettings
+          --results-directory ./coverage
+
+      - name: Gerar relatório de cobertura
+        if: always()
+        run: |
+          dotnet tool restore
+          dotnet tool run reportgenerator \
+            -reports:"coverage/**/coverage.cobertura.xml" \
+            -targetdir:coverage/report \
+            -reporttypes:"Html;TextSummary"
+
+      - name: Publicar relatório de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/report

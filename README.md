@@ -1,5 +1,7 @@
 # OniBus Express
 
+[![CI](https://github.com/medinasp/OniBus-Express/actions/workflows/ci.yml/badge.svg)](https://github.com/medinasp/OniBus-Express/actions/workflows/ci.yml)
+
 API de **venda de passagens rodoviárias** (backend). Permite listar rotas, buscar viagens,
 consultar o mapa de assentos e **reservar/cancelar** assentos com garantia de que o mesmo assento
 nunca é vendido duas vezes — inclusive sob requisições concorrentes.
@@ -251,7 +253,7 @@ docs/                            spec, plan, constitution, ADRs
 - Autenticação/autorização e limitação de taxa (*rate limiting*).
 - Paginação e filtros adicionais nas listagens.
 - Telemetria (métricas e *tracing* via OpenTelemetry).
-- Pipeline de CI (build + testes + cobertura a cada push).
+- Publicação de imagem em *registry* e *deploy* automatizado a partir do CI.
 
 ---
 
