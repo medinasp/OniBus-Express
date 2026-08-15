@@ -10,7 +10,7 @@ public static class TripEndpoints
 {
     public static IEndpointRouteBuilder MapTripEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/trips", async (string? origin, string? destination, string? date, ITripQueries queries, CancellationToken cancellationToken) =>
+        app.MapGet("/api/trips", async (string? origin, string? destination, string? date, int? page, int? pageSize, ITripQueries queries, CancellationToken cancellationToken) =>
             {
                 if (string.IsNullOrWhiteSpace(origin) || string.IsNullOrWhiteSpace(destination) || string.IsNullOrWhiteSpace(date))
                 {
@@ -30,7 +30,7 @@ public static class TripEndpoints
                         type: ApiResults.TypeBase + "validation-error");
                 }
 
-                var trips = await queries.SearchAsync(new TripSearch(origin, destination, parsedDate), cancellationToken);
+                var trips = await queries.SearchAsync(new TripSearch(origin, destination, parsedDate), Pagination.From(page, pageSize), cancellationToken);
                 return Results.Ok(trips);
             })
             .WithName("SearchTrips")

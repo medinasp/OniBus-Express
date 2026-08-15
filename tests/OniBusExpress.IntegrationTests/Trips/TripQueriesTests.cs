@@ -28,7 +28,7 @@ public sealed class TripQueriesTests : IntegrationTestBase
         await SeedAsync();
 
         await using var db = Fixture.CreateContext();
-        var rotas = await new RouteQueries(db).ListAsync(null, null, CancellationToken.None);
+        var rotas = await new RouteQueries(db).ListAsync(null, null, Pagination.From(null, null), CancellationToken.None);
 
         Assert.Equal(3, rotas.Count);
     }
@@ -40,10 +40,22 @@ public sealed class TripQueriesTests : IntegrationTestBase
 
         await using var db = Fixture.CreateContext();
         var viagens = await new TripQueries(db)
-            .SearchAsync(new TripSearch("são paulo", null, null), CancellationToken.None);
+            .SearchAsync(new TripSearch("são paulo", null, null), Pagination.From(null, null), CancellationToken.None);
 
         Assert.NotEmpty(viagens);
         Assert.All(viagens, v => Assert.Equal(v.TotalSeats, v.AvailableSeats));
+    }
+
+    [Fact]
+    public async Task ListAsync_ComPageSize_LimitaAQuantidadeRetornada()
+    {
+        await SeedAsync();
+
+        await using var db = Fixture.CreateContext();
+        var primeiraPagina = await new RouteQueries(db)
+            .ListAsync(null, null, Pagination.From(1, 2), CancellationToken.None);
+
+        Assert.Equal(2, primeiraPagina.Count);
     }
 
     [Fact]

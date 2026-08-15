@@ -12,7 +12,7 @@ public sealed class TripQueries : ITripQueries
 
     public TripQueries(AppDbContext db) => _db = db;
 
-    public async Task<IReadOnlyList<TripSummaryDto>> SearchAsync(TripSearch filter, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<TripSummaryDto>> SearchAsync(TripSearch filter, Pagination pagination, CancellationToken cancellationToken)
     {
         var query =
             from t in _db.Trips.AsNoTracking()
@@ -40,6 +40,8 @@ public sealed class TripQueries : ITripQueries
 
         return await query
             .OrderBy(x => x.Trip.DepartureAt)
+            .Skip(pagination.Skip)
+            .Take(pagination.PageSize)
             .Select(x => new TripSummaryDto(
                 x.Trip.Id,
                 x.Trip.RouteId,

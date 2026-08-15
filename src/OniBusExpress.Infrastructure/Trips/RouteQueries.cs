@@ -11,7 +11,7 @@ public sealed class RouteQueries : IRouteQueries
 
     public RouteQueries(AppDbContext db) => _db = db;
 
-    public async Task<IReadOnlyList<RouteDto>> ListAsync(string? origin, string? destination, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<RouteDto>> ListAsync(string? origin, string? destination, Pagination pagination, CancellationToken cancellationToken)
     {
         var query = _db.Routes.AsNoTracking();
 
@@ -30,6 +30,8 @@ public sealed class RouteQueries : IRouteQueries
         return await query
             .OrderBy(r => r.Origin)
             .ThenBy(r => r.Destination)
+            .Skip(pagination.Skip)
+            .Take(pagination.PageSize)
             .Select(r => new RouteDto(r.Id, r.Origin, r.Destination))
             .ToListAsync(cancellationToken);
     }
