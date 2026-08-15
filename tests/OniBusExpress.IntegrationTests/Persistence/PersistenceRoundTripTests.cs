@@ -40,7 +40,7 @@ public sealed class PersistenceRoundTripTests : IntegrationTestBase
             Assert.Equal(reserva.Code.Value, lida.Code.Value);
             Assert.Equal(ReservationStatus.Confirmed, lida.Status);
             Assert.Equal(12, lida.SeatNumber);
-            Assert.Equal(45.90m, trip.Price);
+            Assert.Equal(trip.Id, lida.TripId);
         }
     }
 }

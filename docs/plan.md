@@ -70,8 +70,8 @@ onibus-express/
 ```
 
 **Regra de dependência:** `Api → Application → Domain`; `Infrastructure → Application/Domain`.
-O `Domain` não referencia nenhum outro projeto. Um teste de arquitetura (NetArchTest) reprova o
-build se essa regra for violada (T-23).
+O `Domain` não referencia nenhum outro projeto. Um teste de arquitetura (NetArchTest) falha se essa
+regra for violada (T-23).
 
 ---
 

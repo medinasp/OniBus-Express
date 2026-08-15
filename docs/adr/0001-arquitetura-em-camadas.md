@@ -15,7 +15,7 @@ A regra de negócio (reservas, concorrência, validações) precisa ser isolada 
 
 ## Decisão
 Clean Architecture enxuta em quatro camadas, com o `Domain` puro (sem EF nem HTTP) e as dependências
-sempre apontando para dentro. Um teste de arquitetura reprova o build se a regra for violada.
+sempre apontando para dentro. Um teste de arquitetura (NetArchTest) falha se a regra for violada.
 
 ## Consequências
 - Ganho de testabilidade e separação de responsabilidades.

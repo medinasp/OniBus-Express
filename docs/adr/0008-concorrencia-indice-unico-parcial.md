@@ -23,5 +23,5 @@ que exatamente uma vença.
 ## Consequências
 - Correto sob qualquer concorrência, sem contenção de lock explícito.
 - Permite reservar o assento novamente após um cancelamento (a condição exclui `Cancelled`).
-- Fornece **idempotência** contra envios duplicados sem custo adicional.
+- Fornece **proteção contra envios duplicados** (*double-submit*) sem custo adicional.
 - Depende de traduzir a exceção de unicidade do PostgreSQL (`23505`) na borda de Infraestrutura.
