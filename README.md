@@ -15,6 +15,7 @@ que vai de testes unitários de domínio a testes de ponta a ponta contra um Pos
 
 - [Como executar](#como-executar)
 - [Endpoints](#endpoints)
+- [Testando pela tela do Swagger](#testando-pela-tela-do-swagger)
 - [Tecnologias e justificativa](#tecnologias-e-justificativa)
 - [Arquitetura e decisões](#arquitetura-e-decisões)
 - [Concorrência: o coração do sistema](#concorrência-o-coração-do-sistema)
@@ -28,44 +29,75 @@ que vai de testes unitários de domínio a testes de ponta a ponta contra um Pos
 
 ## Como executar
 
-### Pré-requisitos
+Há duas formas de rodar a aplicação. **A Opção 1 (com Docker) é a mais simples** e não exige instalar
+nada além do Docker — é a recomendada. Em ambos os casos, a aplicação **cria as tabelas e insere
+dados de exemplo sozinha** no primeiro início; não é preciso configurar nada além do indicado abaixo.
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [Docker](https://www.docker.com/) (para o caminho com contêiner e para os testes de integração)
+Antes de começar, faça o download do projeto (ou clone o repositório) e abra um **terminal** na pasta
+do projeto — a pasta que contém o arquivo `docker-compose.yml`.
 
-### Com Docker (recomendado)
+### Opção 1 — Com Docker (recomendada)
 
-```bash
-docker compose up --build
-```
+1. Instale o **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** e deixe-o aberto
+   (aguarde o ícone indicar que o Docker está em execução).
+2. No terminal, dentro da pasta do projeto, execute:
 
-Sobem dois serviços: **PostgreSQL 16** e a **API**. As *migrations* e o *seed* de dados são
-aplicados automaticamente no startup, então a API já sobe pronta para uso.
+   ```bash
+   docker compose up --build
+   ```
 
-- API: <http://localhost:8080>
-- **Swagger UI**: <http://localhost:8080/swagger>
-- Health: <http://localhost:8080/health> · Readiness: <http://localhost:8080/health/ready>
+   Na primeira vez leva alguns minutos (baixa as imagens e compila o projeto). A aplicação está
+   pronta quando aparecer no terminal uma linha parecida com:
 
-### Sem Docker
+   ```
+   Now listening on: http://[::]:8080
+   Application started. Press Ctrl+C to shut down.
+   ```
 
-É necessário um PostgreSQL 16 acessível. A forma mais simples é subir **apenas o banco** via Compose
-e rodar a API no host:
+3. Abra no navegador: **<http://localhost:8080/swagger>**. Essa é a documentação interativa, onde é
+   possível **executar todos os endpoints clicando em botões** (ver [Testando pela tela do
+   Swagger](#testando-pela-tela-do-swagger)).
+4. Para **parar**: pressione `Ctrl+C` no terminal e, em seguida, execute `docker compose down`.
 
-```bash
-docker compose up -d postgres
-dotnet run --project src/OniBusExpress.Api
-```
+O banco de dados sobe **isolado dentro do Docker** e não ocupa portas do seu computador.
 
-A string de conexão padrão (`appsettings.json`) já aponta para `localhost:5432`. Para outro banco,
-sobrescreva `ConnectionStrings:Default` (via `appsettings` ou variável de ambiente
-`ConnectionStrings__Default`).
+> **Se a porta 8080 já estiver em uso** por outro programa: copie o arquivo `.env.example` para um
+> arquivo chamado `.env`, abra-o e altere `API_PORT` para outra porta (por exemplo, `8081`). A
+> aplicação passará a responder em `http://localhost:8081`.
 
-A API aplica as *migrations* e o *seed* no startup. Caso prefira aplicar o schema separadamente:
+### Opção 2 — Sem Docker
 
-```bash
-dotnet tool restore
-dotnet ef database update --project src/OniBusExpress.Infrastructure --startup-project src/OniBusExpress.Infrastructure
-```
+Esta opção roda a aplicação diretamente no seu computador. Exige instalar o .NET e o PostgreSQL.
+
+1. Instale o **[.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)**.
+2. Instale o **[PostgreSQL 16](https://www.postgresql.org/download/)**. Durante a instalação, defina
+   uma senha para o usuário administrador (`postgres`) e conclua com as opções padrão.
+3. Crie o banco e o usuário que a aplicação espera. Abra o **SQL Shell (psql)** — instalado junto com
+   o PostgreSQL — conecte-se como usuário `postgres` e execute:
+
+   ```sql
+   CREATE USER onibus WITH PASSWORD 'onibus';
+   CREATE DATABASE onibus OWNER onibus;
+   ```
+
+   Esses valores correspondem à configuração padrão em
+   `src/OniBusExpress.Api/appsettings.json`. Para usar outro banco ou outras credenciais, defina a
+   variável de ambiente `ConnectionStrings__Default` antes de iniciar a aplicação.
+4. No terminal, dentro da pasta do projeto, execute:
+
+   ```bash
+   dotnet run --project src/OniBusExpress.Api
+   ```
+
+   Aguarde a mensagem `Application started`. A aplicação cria as tabelas e insere os dados de exemplo
+   automaticamente.
+5. Abra no navegador: **<http://localhost:8080/swagger>**.
+6. Para **parar**: pressione `Ctrl+C` no terminal.
+
+### Como confirmar que está no ar
+
+Abra <http://localhost:8080/health> no navegador — deve responder `Healthy`. A documentação
+interativa fica em <http://localhost:8080/swagger>.
 
 ---
 
@@ -95,6 +127,32 @@ curl -X POST http://localhost:8080/api/reservations \
         "seatNumber": 12,
         "passenger": { "name": "Maria Silva", "cpf": "111.444.777-35" } }'
 ```
+
+---
+
+## Testando pela tela do Swagger
+
+Com a aplicação no ar, abra **<http://localhost:8080/swagger>**. Não é preciso instalar nada nem
+saber programar — dá para executar tudo pela tela:
+
+1. Clique em um endpoint para expandir (ex.: `POST /api/reservations`).
+2. Clique no botão **"Try it out"**.
+3. Preencha os campos (use os **dados de exemplo** abaixo).
+4. Clique em **"Execute"**. A resposta — código de status e conteúdo — aparece logo abaixo.
+
+**Dados de exemplo** (criados automaticamente ao iniciar a aplicação):
+
+| Recurso | Valor | Serve para demonstrar |
+|---|---|---|
+| Viagem **futura** | `b0000000-0000-0000-0000-000000000001` | reservar um assento com sucesso (`201`) |
+| Viagem **no passado** | `b0000000-0000-0000-0000-000000000002` | recusa de reserva em viagem já partida (`422`) |
+| Viagem **partindo em < 2h** | `b0000000-0000-0000-0000-000000000003` | recusa de cancelamento fora da janela de 2h (`422`) |
+| CPF válido de exemplo | `111.444.777-35` ou `529.982.247-25` | preencher os dados do passageiro |
+
+Sugestão de roteiro: liste as rotas (`GET /api/routes`), veja o mapa de assentos da viagem futura
+(`GET /api/trips/{id}`), crie uma reserva (`POST /api/reservations`), consulte-a pelo código
+retornado (`GET /api/reservations/{code}`) e cancele-a
+(`POST /api/reservations/{code}/cancellation`).
 
 ---
 
