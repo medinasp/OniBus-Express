@@ -58,8 +58,11 @@
 - [ ] **TASK-16 — Testes de arquitetura.** `NetArchTest`: fronteiras de camada. — *cobre: T-23*
 - [ ] **TASK-17 — Cobertura.** `coverlet` + `ReportGenerator` na execução local dos testes;
   foco em RN-01..RN-08. — *cobre: RNF-10*
-- [ ] **TASK-18 — README.** Português; como rodar com e sem Docker (comandos locais), decisões,
-  escopo, link para o diagrama e os ADRs. — *depende de: TASK-14*
+- [ ] **TASK-18 — README** (português). Seções: (1) como rodar local **com e sem Docker**;
+  (2) tecnologias usadas e justificativa; (3) decisões de arquitetura (SOLID, Clean Architecture,
+  ADRs); (4) **o que foi implementado vs. omitido** (backend; interface de usuário fora de escopo);
+  (5) como rodar os testes. Extras: link do Swagger, screenshots, melhorias futuras. — *depende de:
+  TASK-14*
 
 ## Extra (bônus, opcional)
 
