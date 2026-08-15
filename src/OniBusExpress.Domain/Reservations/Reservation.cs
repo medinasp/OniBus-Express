@@ -67,7 +67,7 @@ public sealed class Reservation
             null);
     }
 
-    public static Reservation Rehydrate(
+    internal static Reservation Rehydrate(
         Guid id,
         ReservationCode code,
         Guid tripId,
