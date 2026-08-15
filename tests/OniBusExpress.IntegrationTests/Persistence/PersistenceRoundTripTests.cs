@@ -7,11 +7,11 @@ using OniBusExpress.IntegrationTests.Infrastructure;
 namespace OniBusExpress.IntegrationTests.Persistence;
 
 [Collection(DatabaseCollection.Name)]
-public sealed class PersistenceRoundTripTests
+public sealed class PersistenceRoundTripTests : IntegrationTestBase
 {
-    private readonly PostgresFixture _fixture;
-
-    public PersistenceRoundTripTests(PostgresFixture fixture) => _fixture = fixture;
+    public PersistenceRoundTripTests(PostgresFixture fixture) : base(fixture)
+    {
+    }
 
     [Fact]
     public async Task Reserva_PersistidaELida_PreservaValueObjects()
@@ -23,7 +23,7 @@ public sealed class PersistenceRoundTripTests
         Cpf.TryCreate("11144477735", out var cpf);
         var reserva = Reservation.Create(trip, 12, name!, cpf!, DateTimeOffset.UtcNow).Value!;
 
-        await using (var db = _fixture.CreateContext())
+        await using (var db = Fixture.CreateContext())
         {
             db.Add(route);
             db.Add(trip);
@@ -31,7 +31,7 @@ public sealed class PersistenceRoundTripTests
             await db.SaveChangesAsync();
         }
 
-        await using (var db = _fixture.CreateContext())
+        await using (var db = Fixture.CreateContext())
         {
             var lida = await db.Reservations.SingleAsync(r => r.Id == reserva.Id);
 

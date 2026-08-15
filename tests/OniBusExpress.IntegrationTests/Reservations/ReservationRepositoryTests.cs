@@ -8,11 +8,11 @@ using OniBusExpress.IntegrationTests.Infrastructure;
 namespace OniBusExpress.IntegrationTests.Reservations;
 
 [Collection(DatabaseCollection.Name)]
-public sealed class ReservationRepositoryTests
+public sealed class ReservationRepositoryTests : IntegrationTestBase
 {
-    private readonly PostgresFixture _fixture;
-
-    public ReservationRepositoryTests(PostgresFixture fixture) => _fixture = fixture;
+    public ReservationRepositoryTests(PostgresFixture fixture) : base(fixture)
+    {
+    }
 
     private async Task<Trip> SeedTripAsync(int totalSeats = 40)
     {
@@ -20,7 +20,7 @@ public sealed class ReservationRepositoryTests
         var route = new Route(Guid.NewGuid(), "São Paulo", "Rio de Janeiro");
         var trip = new Trip(Guid.NewGuid(), route.Id, partida, partida.AddHours(6), 120m, totalSeats);
 
-        await using var db = _fixture.CreateContext();
+        await using var db = Fixture.CreateContext();
         db.Add(route);
         db.Add(trip);
         await db.SaveChangesAsync();
@@ -39,7 +39,7 @@ public sealed class ReservationRepositoryTests
     {
         var trip = await SeedTripAsync();
 
-        await using var db = _fixture.CreateContext();
+        await using var db = Fixture.CreateContext();
         var repo = new ReservationRepository(db);
 
         var resultado = await repo.AddAsync(NovaReserva(trip, 10), CancellationToken.None);
@@ -52,12 +52,12 @@ public sealed class ReservationRepositoryTests
     {
         var trip = await SeedTripAsync();
 
-        await using (var db = _fixture.CreateContext())
+        await using (var db = Fixture.CreateContext())
         {
             await new ReservationRepository(db).AddAsync(NovaReserva(trip, 20), CancellationToken.None);
         }
 
-        await using (var db = _fixture.CreateContext())
+        await using (var db = Fixture.CreateContext())
         {
             var resultado = await new ReservationRepository(db).AddAsync(NovaReserva(trip, 20), CancellationToken.None);
             Assert.Equal(ReservationInsertResult.SeatAlreadyTaken, resultado);
@@ -73,7 +73,7 @@ public sealed class ReservationRepositoryTests
 
         var tarefas = Enumerable.Range(0, paralelas).Select(async _ =>
         {
-            await using var db = _fixture.CreateContext();
+            await using var db = Fixture.CreateContext();
             return await new ReservationRepository(db).AddAsync(NovaReserva(trip, assento), CancellationToken.None);
         });
 
@@ -89,12 +89,12 @@ public sealed class ReservationRepositoryTests
         var trip = await SeedTripAsync();
         var reserva = NovaReserva(trip, 15);
 
-        await using (var db = _fixture.CreateContext())
+        await using (var db = Fixture.CreateContext())
         {
             await new ReservationRepository(db).AddAsync(reserva, CancellationToken.None);
         }
 
-        await using (var db = _fixture.CreateContext())
+        await using (var db = Fixture.CreateContext())
         {
             var repo = new ReservationRepository(db);
             var persistida = await repo.GetByCodeAsync(reserva.Code, CancellationToken.None);
@@ -102,7 +102,7 @@ public sealed class ReservationRepositoryTests
             await repo.SaveChangesAsync(CancellationToken.None);
         }
 
-        await using (var db = _fixture.CreateContext())
+        await using (var db = Fixture.CreateContext())
         {
             var resultado = await new ReservationRepository(db).AddAsync(NovaReserva(trip, 15), CancellationToken.None);
             Assert.Equal(ReservationInsertResult.Inserted, resultado);
@@ -115,7 +115,7 @@ public sealed class ReservationRepositoryTests
         var trip = await SeedTripAsync();
         var original = NovaReserva(trip, 1);
 
-        await using (var db = _fixture.CreateContext())
+        await using (var db = Fixture.CreateContext())
         {
             await new ReservationRepository(db).AddAsync(original, CancellationToken.None);
         }
@@ -126,7 +126,7 @@ public sealed class ReservationRepositoryTests
             Guid.NewGuid(), original.Code, trip.Id, 2, name!, cpf!,
             ReservationStatus.Confirmed, DateTimeOffset.UtcNow, null);
 
-        await using (var db = _fixture.CreateContext())
+        await using (var db = Fixture.CreateContext())
         {
             var resultado = await new ReservationRepository(db).AddAsync(duplicada, CancellationToken.None);
             Assert.Equal(ReservationInsertResult.CodeCollision, resultado);
