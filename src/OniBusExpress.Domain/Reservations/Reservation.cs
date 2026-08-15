@@ -67,6 +67,18 @@ public sealed class Reservation
             null);
     }
 
+    public static Reservation Rehydrate(
+        Guid id,
+        ReservationCode code,
+        Guid tripId,
+        int seatNumber,
+        PassengerName passengerName,
+        Cpf passengerCpf,
+        ReservationStatus status,
+        DateTimeOffset createdAt,
+        DateTimeOffset? cancelledAt) =>
+        new(id, code, tripId, seatNumber, passengerName, passengerCpf, status, createdAt, cancelledAt);
+
     public Result Cancel(Trip trip, DateTimeOffset now)
     {
         if (Status == ReservationStatus.Cancelled)
