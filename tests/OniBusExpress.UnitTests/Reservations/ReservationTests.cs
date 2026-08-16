@@ -13,20 +13,19 @@ public class ReservationTests
     private static Trip TripPartindoEm(DateTimeOffset departure, int totalSeats = 40) =>
         new(Guid.NewGuid(), Guid.NewGuid(), departure, departure.AddHours(6), 150m, totalSeats);
 
-    private static (PassengerName Name, Cpf Cpf) Passageiro()
+    private static Passenger Passageiro()
     {
         PassengerName.TryCreate("Maria Silva", out var name);
         Cpf.TryCreate("11144477735", out var cpf);
-        return (name!, cpf!);
+        return new Passenger(name!, cpf!, Email, null);
     }
 
     [Fact]
     public void Create_ComDadosValidos_CriaReservaConfirmada()
     {
         var trip = TripPartindoEm(Agora.AddDays(1));
-        var (name, cpf) = Passageiro();
 
-        var result = Reservation.Create(trip, seatNumber: 12, name, cpf, Email, null, Agora);
+        var result = Reservation.Create(trip, seatNumber: 12, Passageiro(), Agora);
 
         Assert.True(result.IsSuccess);
         var reserva = result.Value!;
@@ -42,9 +41,8 @@ public class ReservationTests
     public void Create_ComViagemNoPassado_RetornaTripInThePast()
     {
         var trip = TripPartindoEm(Agora.AddMinutes(-1));
-        var (name, cpf) = Passageiro();
 
-        var result = Reservation.Create(trip, seatNumber: 12, name, cpf, Email, null, Agora);
+        var result = Reservation.Create(trip, seatNumber: 12, Passageiro(), Agora);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(ErrorType.Unprocessable, result.Error!.Type);
@@ -57,9 +55,8 @@ public class ReservationTests
     public void Create_ComAssentoForaDoIntervalo_RetornaSeatOutOfRange(int seat)
     {
         var trip = TripPartindoEm(Agora.AddDays(1), totalSeats: 40);
-        var (name, cpf) = Passageiro();
 
-        var result = Reservation.Create(trip, seat, name, cpf, Email, null, Agora);
+        var result = Reservation.Create(trip, seat, Passageiro(), Agora);
 
         Assert.False(result.IsSuccess);
         Assert.Equal("seat-out-of-range", result.Error!.Code);
@@ -69,8 +66,7 @@ public class ReservationTests
     public void Cancel_ConfirmadaDentroDaJanela_MarcaComoCancelada()
     {
         var trip = TripPartindoEm(Agora.AddDays(1));
-        var (name, cpf) = Passageiro();
-        var reserva = Reservation.Create(trip, 12, name, cpf, Email, null, Agora).Value!;
+        var reserva = Reservation.Create(trip, 12, Passageiro(), Agora).Value!;
 
         var result = reserva.Cancel(trip, Agora);
 
@@ -83,8 +79,7 @@ public class ReservationTests
     public void Cancel_JaCancelada_RetornaConflito()
     {
         var trip = TripPartindoEm(Agora.AddDays(1));
-        var (name, cpf) = Passageiro();
-        var reserva = Reservation.Create(trip, 12, name, cpf, Email, null, Agora).Value!;
+        var reserva = Reservation.Create(trip, 12, Passageiro(), Agora).Value!;
         reserva.Cancel(trip, Agora);
 
         var result = reserva.Cancel(trip, Agora);
@@ -97,8 +92,7 @@ public class ReservationTests
     public void Cancel_ForaDaJanelaDeDuasHoras_RetornaCancellationWindowClosed()
     {
         var trip = TripPartindoEm(Agora.AddHours(1));
-        var (name, cpf) = Passageiro();
-        var reserva = Reservation.Create(trip, 12, name, cpf, Email, null, Agora.AddDays(-1)).Value!;
+        var reserva = Reservation.Create(trip, 12, Passageiro(), Agora.AddDays(-1)).Value!;
 
         var result = reserva.Cancel(trip, Agora);
 

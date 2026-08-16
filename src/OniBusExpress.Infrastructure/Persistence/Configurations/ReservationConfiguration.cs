@@ -24,25 +24,28 @@ public sealed class ReservationConfiguration : IEntityTypeConfiguration<Reservat
         builder.Property(r => r.TripId).HasColumnName("trip_id");
         builder.Property(r => r.SeatNumber).HasColumnName("seat_number");
 
-        builder.Property(r => r.PassengerName)
-            .HasColumnName("passenger_name")
-            .HasMaxLength(120)
-            .HasConversion(name => name.Value, value => PassengerName.FromPersistence(value))
-            .IsRequired();
+        builder.ComplexProperty(r => r.Passenger, passenger =>
+        {
+            passenger.Property(p => p.Name)
+                .HasColumnName("passenger_name")
+                .HasMaxLength(120)
+                .HasConversion(name => name.Value, value => PassengerName.FromPersistence(value))
+                .IsRequired();
 
-        builder.Property(r => r.PassengerCpf)
-            .HasColumnName("passenger_cpf")
-            .HasMaxLength(11)
-            .HasConversion(cpf => cpf.Value, value => Cpf.FromPersistence(value))
-            .IsRequired();
+            passenger.Property(p => p.Cpf)
+                .HasColumnName("passenger_cpf")
+                .HasMaxLength(11)
+                .HasConversion(cpf => cpf.Value, value => Cpf.FromPersistence(value))
+                .IsRequired();
 
-        builder.Property(r => r.PassengerEmail)
-            .HasColumnName("passenger_email")
-            .HasMaxLength(320)
-            .HasConversion(email => email.Value, value => PassengerEmail.FromPersistence(value))
-            .IsRequired();
+            passenger.Property(p => p.Email)
+                .HasColumnName("passenger_email")
+                .HasMaxLength(320)
+                .HasConversion(email => email.Value, value => PassengerEmail.FromPersistence(value))
+                .IsRequired();
 
-        builder.Property(r => r.PassengerDateOfBirth).HasColumnName("passenger_date_of_birth");
+            passenger.Property(p => p.DateOfBirth).HasColumnName("passenger_date_of_birth");
+        });
 
         builder.Property(r => r.Status)
             .HasColumnName("status")

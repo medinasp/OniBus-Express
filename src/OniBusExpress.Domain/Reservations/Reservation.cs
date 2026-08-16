@@ -10,10 +10,7 @@ public sealed class Reservation
     public ReservationCode Code { get; private set; }
     public Guid TripId { get; private set; }
     public int SeatNumber { get; private set; }
-    public PassengerName PassengerName { get; private set; }
-    public Cpf PassengerCpf { get; private set; }
-    public PassengerEmail PassengerEmail { get; private set; }
-    public DateOnly? PassengerDateOfBirth { get; private set; }
+    public Passenger Passenger { get; private set; } = null!;
     public ReservationStatus Status { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset? CancelledAt { get; private set; }
@@ -23,10 +20,6 @@ public sealed class Reservation
         ReservationCode code,
         Guid tripId,
         int seatNumber,
-        PassengerName passengerName,
-        Cpf passengerCpf,
-        PassengerEmail passengerEmail,
-        DateOnly? passengerDateOfBirth,
         ReservationStatus status,
         DateTimeOffset createdAt,
         DateTimeOffset? cancelledAt)
@@ -35,10 +28,6 @@ public sealed class Reservation
         Code = code;
         TripId = tripId;
         SeatNumber = seatNumber;
-        PassengerName = passengerName;
-        PassengerCpf = passengerCpf;
-        PassengerEmail = passengerEmail;
-        PassengerDateOfBirth = passengerDateOfBirth;
         Status = status;
         CreatedAt = createdAt;
         CancelledAt = cancelledAt;
@@ -47,10 +36,7 @@ public sealed class Reservation
     public static Result<Reservation> Create(
         Trip trip,
         int seatNumber,
-        PassengerName passengerName,
-        Cpf passengerCpf,
-        PassengerEmail passengerEmail,
-        DateOnly? passengerDateOfBirth,
+        Passenger passenger,
         DateTimeOffset now)
     {
         if (trip.HasDeparted(now))
@@ -68,13 +54,12 @@ public sealed class Reservation
             ReservationCode.Generate(),
             trip.Id,
             seatNumber,
-            passengerName,
-            passengerCpf,
-            passengerEmail,
-            passengerDateOfBirth,
             ReservationStatus.Confirmed,
             now,
-            null);
+            null)
+        {
+            Passenger = passenger
+        };
     }
 
     internal static Reservation Rehydrate(
@@ -82,14 +67,14 @@ public sealed class Reservation
         ReservationCode code,
         Guid tripId,
         int seatNumber,
-        PassengerName passengerName,
-        Cpf passengerCpf,
-        PassengerEmail passengerEmail,
-        DateOnly? passengerDateOfBirth,
+        Passenger passenger,
         ReservationStatus status,
         DateTimeOffset createdAt,
         DateTimeOffset? cancelledAt) =>
-        new(id, code, tripId, seatNumber, passengerName, passengerCpf, passengerEmail, passengerDateOfBirth, status, createdAt, cancelledAt);
+        new(id, code, tripId, seatNumber, status, createdAt, cancelledAt)
+        {
+            Passenger = passenger
+        };
 
     public Result Cancel(Trip trip, DateTimeOffset now)
     {

@@ -32,7 +32,7 @@ public sealed class ReservationRepositoryTests : IntegrationTestBase
         PassengerName.TryCreate("João Souza", out var name);
         Cpf.TryCreate("11144477735", out var cpf);
         PassengerEmail.TryCreate("joao@exemplo.com", out var email);
-        return Reservation.Create(trip, seat, name!, cpf!, email!, null, DateTimeOffset.UtcNow).Value!;
+        return Reservation.Create(trip, seat, new Passenger(name!, cpf!, email!, null), DateTimeOffset.UtcNow).Value!;
     }
 
     [Fact]
@@ -125,7 +125,7 @@ public sealed class ReservationRepositoryTests : IntegrationTestBase
         Cpf.TryCreate("52998224725", out var cpf);
         PassengerEmail.TryCreate("ana@exemplo.com", out var email);
         var duplicada = Reservation.Rehydrate(
-            Guid.NewGuid(), original.Code, trip.Id, 2, name!, cpf!, email!, null,
+            Guid.NewGuid(), original.Code, trip.Id, 2, new Passenger(name!, cpf!, email!, null),
             ReservationStatus.Confirmed, DateTimeOffset.UtcNow, null);
 
         await using (var db = Fixture.CreateContext())

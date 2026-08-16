@@ -29,10 +29,10 @@ public sealed record ReservationResponse(
             reservation.Code.Value,
             reservation.TripId,
             reservation.SeatNumber,
-            reservation.PassengerName.Value,
-            reservation.PassengerCpf.Masked,
-            reservation.PassengerEmail.Value,
-            reservation.PassengerDateOfBirth,
+            reservation.Passenger.Name.Value,
+            reservation.Passenger.Cpf.Masked,
+            reservation.Passenger.Email.Value,
+            reservation.Passenger.DateOfBirth,
             reservation.Status.ToString(),
             reservation.CreatedAt);
 }
@@ -77,9 +77,11 @@ public sealed class CreateReservation
 
         var now = _clock.GetUtcNow();
 
+        var passenger = new Passenger(name!, cpf!, email!, command.PassengerDateOfBirth);
+
         for (var attempt = 0; attempt < MaxCodeGenerationAttempts; attempt++)
         {
-            var creation = Reservation.Create(trip, command.SeatNumber, name!, cpf!, email!, command.PassengerDateOfBirth, now);
+            var creation = Reservation.Create(trip, command.SeatNumber, passenger, now);
             if (!creation.IsSuccess)
             {
                 return creation.Error!;

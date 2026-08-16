@@ -22,7 +22,7 @@ public sealed class PersistenceRoundTripTests : IntegrationTestBase
         PassengerName.TryCreate("Maria Silva", out var name);
         Cpf.TryCreate("11144477735", out var cpf);
         PassengerEmail.TryCreate("maria@exemplo.com", out var email);
-        var reserva = Reservation.Create(trip, 12, name!, cpf!, email!, null, DateTimeOffset.UtcNow).Value!;
+        var reserva = Reservation.Create(trip, 12, new Passenger(name!, cpf!, email!, null), DateTimeOffset.UtcNow).Value!;
 
         await using (var db = Fixture.CreateContext())
         {
@@ -36,9 +36,9 @@ public sealed class PersistenceRoundTripTests : IntegrationTestBase
         {
             var lida = await db.Reservations.SingleAsync(r => r.Id == reserva.Id);
 
-            Assert.Equal("11144477735", lida.PassengerCpf.Value);
-            Assert.Equal("Maria Silva", lida.PassengerName.Value);
-            Assert.Equal("maria@exemplo.com", lida.PassengerEmail.Value);
+            Assert.Equal("11144477735", lida.Passenger.Cpf.Value);
+            Assert.Equal("Maria Silva", lida.Passenger.Name.Value);
+            Assert.Equal("maria@exemplo.com", lida.Passenger.Email.Value);
             Assert.Equal(reserva.Code.Value, lida.Code.Value);
             Assert.Equal(ReservationStatus.Confirmed, lida.Status);
             Assert.Equal(12, lida.SeatNumber);
