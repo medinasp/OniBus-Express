@@ -5,8 +5,8 @@
 
 ## Contexto
 Cancelar uma reserva é uma **transição de estado**: a reserva passa a `Cancelled` e continua
-consultável, não é removida fisicamente. O contrato requerido expõe o cancelamento como
-`DELETE /reservas/{codigo}`.
+consultável, não é removida fisicamente. Resta definir como expor essa operação na API — o verbo
+HTTP e a semântica do cancelamento.
 
 ## Opções consideradas
 1. **Remoção física no `DELETE`** — apagaria a reserva; perde histórico e contraria a regra de que

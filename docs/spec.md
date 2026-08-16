@@ -154,7 +154,7 @@ erDiagram
 
 ## 7. Contrato da API
 
-Prefixo base: `/api`. Formato: JSON. Datas em ISO-8601 UTC.
+Recursos na raiz (sem prefixo). Formato: JSON. Datas em ISO-8601 UTC.
 
 ### RF-01 · `GET /routes`
 Lista as rotas. Parâmetros opcionais de filtro: `origin`, `destination`. Paginação opcional:
