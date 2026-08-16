@@ -19,7 +19,8 @@ builder.Host.UseSerilog((context, configuration) =>
         .WriteTo.Console());
 
 var connectionString = builder.Configuration.GetConnectionString("Default")
-    ?? throw new InvalidOperationException("Connection string 'Default' não configurada.");
+    ?? throw new InvalidOperationException(
+        "Connection string 'Default' não configurada. Defina a variável de ambiente ConnectionStrings__Default ou as variáveis POSTGRES_* no arquivo .env.");
 
 builder.Services.AddInfrastructure(connectionString);
 builder.Services.AddApplication();

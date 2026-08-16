@@ -8,7 +8,8 @@ public sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
     public AppDbContext CreateDbContext(string[] args)
     {
         var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__Default")
-            ?? "Host=localhost;Port=5432;Database=onibus;Username=onibus";
+            ?? throw new InvalidOperationException(
+                "Defina a variável de ambiente ConnectionStrings__Default (ou as variáveis do .env) para operações de design-time do EF Core.");
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseNpgsql(connectionString)

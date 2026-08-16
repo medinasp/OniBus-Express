@@ -36,6 +36,11 @@ dados de exemplo sozinha** no primeiro início; não é preciso configurar nada 
 Antes de começar, faça o download do projeto (ou clone o repositório) e abra um **terminal** na pasta
 do projeto — a pasta que contém o arquivo `docker-compose.yml`.
 
+> **Credenciais.** O repositório **não contém nenhuma credencial**. Coloque o arquivo `.env`
+> (enviado separadamente, fora do repositório) na **mesma pasta** do `docker-compose.yml` antes de
+> subir a aplicação — é dele que vêm o usuário, a senha e o nome do banco. Sem esse arquivo, a
+> aplicação não sobe (e exibe qual variável está faltando).
+
 ### Opção 1 — Com Docker (recomendada)
 
 1. Instale o **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** e deixe-o aberto
@@ -59,11 +64,12 @@ do projeto — a pasta que contém o arquivo `docker-compose.yml`.
    Swagger](#testando-pela-tela-do-swagger)).
 4. Para **parar**: pressione `Ctrl+C` no terminal e, em seguida, execute `docker compose down`.
 
-O banco de dados sobe **isolado dentro do Docker** e não ocupa portas do seu computador.
+O banco de dados sobe dentro do Docker e fica acessível em `localhost:${POSTGRES_PORT}` (porta
+definida no `.env`, padrão `5432`) — útil para inspecioná-lo em uma ferramenta como o DBeaver
+(ver [Inspecionar o banco](#inspecionar-o-banco-opcional)).
 
-> **Se a porta 8080 já estiver em uso** por outro programa: copie o arquivo `.env.example` para um
-> arquivo chamado `.env`, abra-o e altere `API_PORT` para outra porta (por exemplo, `8081`). A
-> aplicação passará a responder em `http://localhost:8081`.
+> **Se a porta 8080 já estiver em uso** por outro programa: abra o arquivo `.env` e altere `API_PORT`
+> para outra porta (por exemplo, `8081`). A aplicação passará a responder em `http://localhost:8081`.
 
 ### Opção 2 — Sem Docker
 
@@ -72,32 +78,35 @@ Esta opção roda a aplicação diretamente no seu computador. Exige instalar o 
 1. Instale o **[.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)**.
 2. Instale o **[PostgreSQL 16](https://www.postgresql.org/download/)**. Durante a instalação, defina
    uma senha para o usuário administrador (`postgres`) e conclua com as opções padrão.
+   Os valores `xxxxxxxxx` nos comandos abaixo são apenas **marcadores de formatação** — substitua
+   pelas credenciais reais (as mesmas do arquivo `.env` enviado separadamente).
+
 3. Crie o banco e o usuário que a aplicação vai usar. Abra o **SQL Shell (psql)** — instalado junto
-   com o PostgreSQL — conecte-se como usuário `postgres` e execute (escolha a senha que preferir):
+   com o PostgreSQL — conecte-se como usuário `postgres` e execute:
 
    ```sql
-   CREATE USER onibus WITH PASSWORD 'onibus';
-   CREATE DATABASE onibus OWNER onibus;
+   CREATE USER xxxxxxxxx WITH PASSWORD 'xxxxxxxxx';
+   CREATE DATABASE xxxxxxxxx OWNER xxxxxxxxx;
    ```
 
 4. Informe à aplicação como conectar nesse banco pela variável de ambiente
-   `ConnectionStrings__Default` (nenhuma credencial fica no repositório) e rode a API.
+   `ConnectionStrings__Default` (o repositório não contém nenhuma credencial) e rode a API.
 
    No **Linux/macOS**:
 
    ```bash
-   export ConnectionStrings__Default="Host=localhost;Port=5432;Database=onibus;Username=onibus;Password=onibus"
+   export ConnectionStrings__Default="Host=localhost;Port=5432;Database=xxxxxxxxx;Username=xxxxxxxxx;Password=xxxxxxxxx"
    dotnet run --project src/OniBusExpress.Api
    ```
 
    No **Windows (PowerShell)**:
 
    ```powershell
-   $env:ConnectionStrings__Default = "Host=localhost;Port=5432;Database=onibus;Username=onibus;Password=onibus"
+   $env:ConnectionStrings__Default = "Host=localhost;Port=5432;Database=xxxxxxxxx;Username=xxxxxxxxx;Password=xxxxxxxxx"
    dotnet run --project src/OniBusExpress.Api
    ```
 
-   Use a **mesma senha** definida no passo 3. Aguarde a mensagem `Application started` — a aplicação
+   Use as **mesmas credenciais** definidas no passo 3 (as do `.env`). Aguarde a mensagem `Application started` — a aplicação
    cria as tabelas e insere os dados de exemplo automaticamente.
 5. Abra no navegador: **<http://localhost:8080/swagger>**.
 6. Para **parar**: pressione `Ctrl+C` no terminal.
@@ -107,11 +116,27 @@ Esta opção roda a aplicação diretamente no seu computador. Exige instalar o 
 Abra <http://localhost:8080/health> no navegador — deve responder `Healthy`. A documentação
 interativa fica em <http://localhost:8080/swagger>.
 
+### Inspecionar o banco (opcional)
+
+O PostgreSQL fica exposto no host para inspeção em uma ferramenta gráfica (ex.: **DBeaver**). Crie
+uma conexão **PostgreSQL** com os valores do seu `.env`:
+
+| Campo | Valor |
+|---|---|
+| Host | `localhost` |
+| Port | `POSTGRES_PORT` do `.env` (padrão `5432`) |
+| Database | `POSTGRES_DB` do `.env` |
+| Username | `POSTGRES_USER` do `.env` |
+| Password | `POSTGRES_PASSWORD` do `.env` |
+
+As tabelas ficam em **Schemas → public**: `route`, `trip`, `reservation`. Se a porta padrão `5432`
+já estiver em uso na sua máquina, defina outra em `POSTGRES_PORT` no `.env` (ex.: `5433`).
+
 ---
 
 ## Endpoints
 
-Prefixo base `/api`. Corpo em JSON, datas em ISO-8601 (UTC).
+Recursos na raiz (sem prefixo). Corpo e respostas em JSON; datas em ISO-8601 (UTC).
 
 | Método | Rota | Descrição |
 |---|---|---|
@@ -342,7 +367,7 @@ dotnet test --collect:"XPlat Code Coverage" --settings coverlet.runsettings --re
 dotnet tool run reportgenerator -reports:"coverage/**/coverage.cobertura.xml" -targetdir:coverage/report -reporttypes:Html
 ```
 
-Cobertura de linha em torno de **89%**, com o **Domínio acima de 97%** — as regras de negócio
+Cobertura de linha de **90,8%**, com o **Domínio em 97,7%** — as regras de negócio
 (RN-01 a RN-08) estão amplamente cobertas.
 
 ---

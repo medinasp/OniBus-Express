@@ -1,14 +1,16 @@
 services:
   postgres:
     image: postgres:16
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-onibus}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-onibus}
-      POSTGRES_DB: ${POSTGRES_DB:-onibus}
+      POSTGRES_USER: ${POSTGRES_USER:?defina POSTGRES_USER no arquivo .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no arquivo .env}
+      POSTGRES_DB: ${POSTGRES_DB:?defina POSTGRES_DB no arquivo .env}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-onibus} -d ${POSTGRES_DB:-onibus}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -18,7 +20,7 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-onibus};Username=${POSTGRES_USER:-onibus};Password=${POSTGRES_PASSWORD:-onibus}"
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       ASPNETCORE_HTTP_PORTS: "8080"
     ports:
       - "${API_PORT:-8080}:8080"
