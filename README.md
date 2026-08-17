@@ -87,8 +87,9 @@ Esta opção roda a aplicação diretamente no seu computador.
 - **[.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)** instalado.
 - **[PostgreSQL 16](https://www.postgresql.org/download/)** instalado e **em execução**, com o
   cliente de linha de comando **`psql` no `PATH`** (vem junto na instalação padrão).
-- A **senha do superusuário** do seu PostgreSQL (o usuário `postgres`, cuja senha você definiu ao
-  instalar) — é usada **uma única vez** para criar o banco. Ela é sua, local, e **não** está no `.env`.
+- **Acesso de superusuário** ao PostgreSQL, usado **uma única vez** para criar o banco: no
+  Windows/macOS, a senha do usuário `postgres` definida na instalação; no Linux, normalmente via
+  `sudo -u postgres`. É local, seu, e **não** está no `.env`.
 - O arquivo **`.env`** (enviado separadamente) posicionado na **raiz do projeto**.
 
 **Passos:**
@@ -107,11 +108,12 @@ Esta opção roda a aplicação diretamente no seu computador.
    ```
 
    > **Sobre a senha do superusuário.** Informe-a via `SUPERUSER_PASSWORD`, como acima, **se
-   > necessário** — se o seu PostgreSQL local aceita conexão sem senha (autenticação `trust`/`peer`),
+   > necessário** — se o seu PostgreSQL aceita conexão TCP local sem senha (autenticação `trust`),
    > basta rodar o script sem essa variável. Alternativamente, você pode preencher a senha direto no
    > script, na linha `SUPERUSER_PASSWORD` indicada no topo do arquivo. O script assume o superusuário
    > `postgres` na porta `POSTGRES_PORT` do `.env` (padrão `5432`); ajuste `SUPERUSER`/`POSTGRES_PORT`
-   > se o seu ambiente diferir.
+   > se o seu ambiente diferir. **No Linux**, onde o `postgres` costuma exigir socket/`peer`, prefira o
+   > provisionamento manual abaixo (`sudo -u postgres`).
 
 2. Rode a API:
 
@@ -125,9 +127,16 @@ Esta opção roda a aplicação diretamente no seu computador.
 3. Abra no navegador: **<http://localhost:8080/swagger>**.
 4. Para **parar**: pressione `Ctrl+C` no terminal.
 
-> Provisionar o banco à mão continua possível, sem o script: conecte-se como `postgres` via `psql` e
-> execute `CREATE ROLE <POSTGRES_USER> LOGIN PASSWORD '<POSTGRES_PASSWORD>';` e
-> `CREATE DATABASE <POSTGRES_DB> OWNER <POSTGRES_USER>;` com os valores do `.env`.
+> **Provisionar o banco à mão** (sem o script) também funciona. No **Linux**, o caminho mais simples
+> usa o superusuário pelo socket (autenticação `peer`, sem senha) — conecte com `sudo -u postgres psql`
+> e execute, com os valores do `.env` (identificadores **entre aspas**):
+>
+> ```sql
+> CREATE ROLE "<POSTGRES_USER>" LOGIN PASSWORD '<POSTGRES_PASSWORD>';
+> CREATE DATABASE "<POSTGRES_DB>" OWNER "<POSTGRES_USER>";
+> ```
+>
+> Em outros sistemas, conecte-se como `postgres` da forma usual e rode os mesmos comandos.
 
 ### Como confirmar que está no ar
 
