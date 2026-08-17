@@ -80,23 +80,40 @@ definida no `.env`, padrão `5432`) — útil para inspecioná-lo em uma ferrame
 
 ### Opção 2 — Sem Docker
 
-Esta opção roda a aplicação diretamente no seu computador. Exige instalar o .NET e o PostgreSQL.
+Esta opção roda a aplicação diretamente no seu computador.
 
-1. Instale o **[.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)**.
-2. Instale o **[PostgreSQL 16](https://www.postgresql.org/download/)**. Durante a instalação, defina
-   uma senha para o usuário administrador (`postgres`) e conclua com as opções padrão.
-   Os valores `xxxxxxxxx` nos comandos abaixo são apenas **marcadores de formatação** — substitua
-   pelas credenciais reais (as mesmas do arquivo `.env` enviado separadamente).
+**Requisitos:**
 
-3. Crie o banco e o usuário que a aplicação vai usar. Abra o **SQL Shell (psql)** — instalado junto
-   com o PostgreSQL — conecte-se como usuário `postgres` e execute:
+- **[.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)** instalado.
+- **[PostgreSQL 16](https://www.postgresql.org/download/)** instalado e **em execução**, com o
+  cliente de linha de comando **`psql` no `PATH`** (vem junto na instalação padrão).
+- A **senha do superusuário** do seu PostgreSQL (o usuário `postgres`, cuja senha você definiu ao
+  instalar) — é usada **uma única vez** para criar o banco. Ela é sua, local, e **não** está no `.env`.
+- O arquivo **`.env`** (enviado separadamente) posicionado na **raiz do projeto**.
 
-   ```sql
-   CREATE USER xxxxxxxxx WITH PASSWORD 'xxxxxxxxx';
-   CREATE DATABASE xxxxxxxxx OWNER xxxxxxxxx;
+**Passos:**
+
+1. Provisione o banco e o usuário da aplicação com o script (idempotente — pode rodar mais de uma
+   vez). Ele lê as credenciais da aplicação do `.env` e as cria no seu PostgreSQL:
+
+   ```bash
+   # Linux/macOS
+   SUPERUSER_PASSWORD='senha-do-postgres' ./scripts/create-db.sh
    ```
 
-4. Coloque o arquivo `.env` (enviado separadamente) na **raiz do projeto** e rode a API:
+   ```powershell
+   # Windows (PowerShell)
+   $env:SUPERUSER_PASSWORD = 'senha-do-postgres'; ./scripts/create-db.ps1
+   ```
+
+   > **Sobre a senha do superusuário.** Informe-a via `SUPERUSER_PASSWORD`, como acima, **se
+   > necessário** — se o seu PostgreSQL local aceita conexão sem senha (autenticação `trust`/`peer`),
+   > basta rodar o script sem essa variável. Alternativamente, você pode preencher a senha direto no
+   > script, na linha `SUPERUSER_PASSWORD` indicada no topo do arquivo. O script assume o superusuário
+   > `postgres` na porta `POSTGRES_PORT` do `.env` (padrão `5432`); ajuste `SUPERUSER`/`POSTGRES_PORT`
+   > se o seu ambiente diferir.
+
+2. Rode a API:
 
    ```bash
    dotnet run --project src/OniBusExpress.Api
@@ -105,12 +122,12 @@ Esta opção roda a aplicação diretamente no seu computador. Exige instalar o 
    A aplicação lê o `.env` **automaticamente** ao iniciar, cria as tabelas e insere os dados de
    exemplo. Aguarde a mensagem `Application started`.
 
-   > Se o seu PostgreSQL local não estiver na porta indicada em `POSTGRES_PORT` (padrão `5432`),
-   > ajuste essa variável no `.env`. Como alternativa ao `.env`, é possível definir a variável de
-   > ambiente `ConnectionStrings__Default` com a *connection string* completa antes do `dotnet run` —
-   > é assim que as credenciais entram em produção; o `.env` é uma conveniência de desenvolvimento.
-5. Abra no navegador: **<http://localhost:8080/swagger>**.
-6. Para **parar**: pressione `Ctrl+C` no terminal.
+3. Abra no navegador: **<http://localhost:8080/swagger>**.
+4. Para **parar**: pressione `Ctrl+C` no terminal.
+
+> Provisionar o banco à mão continua possível, sem o script: conecte-se como `postgres` via `psql` e
+> execute `CREATE ROLE <POSTGRES_USER> LOGIN PASSWORD '<POSTGRES_PASSWORD>';` e
+> `CREATE DATABASE <POSTGRES_DB> OWNER <POSTGRES_USER>;` com os valores do `.env`.
 
 ### Como confirmar que está no ar
 
