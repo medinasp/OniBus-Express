@@ -205,6 +205,65 @@ Sugestão de roteiro: liste as rotas (`GET /routes`), veja o mapa de assentos da
 (`GET /trips/{id}`), crie uma reserva (`POST /reservations`), consulte-a pelo código
 retornado (`GET /reservations/{code}`) e cancele-a (`DELETE /reservations/{code}`).
 
+### Exemplos prontos (curl)
+
+Se preferir o terminal, os comandos abaixo executam os mesmos casos, já preenchidos com os dados de
+exemplo. Rode-os na ordem: o `code` retornado no passo 3 é reaproveitado nos passos 4 e 5.
+
+```bash
+BASE=http://localhost:8080
+
+# 1) Listar rotas
+curl "$BASE/routes"
+
+# 2) Detalhe da viagem futura, com o mapa de assentos
+curl "$BASE/trips/b0000000-0000-0000-0000-000000000001"
+
+# 3) Criar uma reserva (201 Created) — anote o "code" da resposta
+curl -X POST "$BASE/reservations" \
+  -H "Content-Type: application/json" \
+  -d '{ "tripId": "b0000000-0000-0000-0000-000000000001",
+        "seatNumber": 12,
+        "passenger": { "name": "Maria Silva", "cpf": "111.444.777-35",
+                       "email": "maria@exemplo.com", "dateOfBirth": "1990-05-20" } }'
+
+# 4) Consultar a reserva (troque ABC-12345 pelo "code" do passo 3)
+curl "$BASE/reservations/ABC-12345"
+
+# 5) Cancelar a reserva (troque ABC-12345 pelo "code" do passo 3)
+curl -X DELETE "$BASE/reservations/ABC-12345"
+```
+
+A **busca de viagens** (`GET /trips`) exige `origin`, `destination` e `date` **em conjunto**. A viagem
+de exemplo parte **dois dias após o primeiro início** da aplicação; o comando abaixo descobre a data
+automaticamente a partir do detalhe da viagem:
+
+```bash
+DATA=$(curl -s "$BASE/trips/b0000000-0000-0000-0000-000000000001" \
+        | grep -oE '"departureAt":"[0-9]{4}-[0-9]{2}-[0-9]{2}' | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+curl "$BASE/trips?origin=S%C3%A3o%20Paulo&destination=Campinas&date=$DATA"
+```
+
+Casos de erro (retornam **Problem Details**):
+
+```bash
+# CPF inválido -> 400
+curl -X POST "$BASE/reservations" -H "Content-Type: application/json" \
+  -d '{ "tripId":"b0000000-0000-0000-0000-000000000001","seatNumber":8,
+        "passenger":{"name":"Maria Silva","cpf":"111.111.111-11","email":"maria@exemplo.com"} }'
+
+# Viagem no passado -> 422
+curl -X POST "$BASE/reservations" -H "Content-Type: application/json" \
+  -d '{ "tripId":"b0000000-0000-0000-0000-000000000002","seatNumber":8,
+        "passenger":{"name":"Maria Silva","cpf":"111.444.777-35","email":"maria@exemplo.com"} }'
+
+# Viagem inexistente -> 404
+curl "$BASE/trips/00000000-0000-0000-0000-000000000000"
+```
+
+> No Windows, rode estes comandos no **Git Bash** ou **WSL** (a sintaxe usa variáveis de shell), ou
+> simplesmente use a tela do Swagger.
+
 ### Provas de execução
 
 As capturas abaixo mostram cada endpoint executado pela tela do Swagger, exibindo o **pedido
