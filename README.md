@@ -36,10 +36,17 @@ dados de exemplo sozinha** no primeiro início; não é preciso configurar nada 
 Antes de começar, faça o download do projeto (ou clone o repositório) e abra um **terminal** na pasta
 do projeto — a pasta que contém o arquivo `docker-compose.yml`.
 
-> **Credenciais.** O repositório **não contém nenhuma credencial**. Coloque o arquivo `.env`
-> (enviado separadamente, fora do repositório) na **mesma pasta** do `docker-compose.yml` antes de
-> subir a aplicação — é dele que vêm o usuário, a senha e o nome do banco. Sem esse arquivo, a
-> aplicação não sobe (e exibe qual variável está faltando).
+> **Credenciais.** O repositório **não contém nenhuma credencial** — usuário, senha e nome do banco
+> vêm do arquivo `.env`, enviado **separadamente** (fora do repositório). Basta colocá-lo na
+> **raiz do projeto** (a mesma pasta do `docker-compose.yml`): a aplicação o lê **automaticamente**
+> nos dois modos —
+>
+> - **Com Docker (Opção 1):** o `docker compose` carrega o `.env` ao subir os contêineres.
+> - **Sem Docker (Opção 2):** a própria API lê o `.env` da pasta ao iniciar (em ambiente de
+>   desenvolvimento) — sem precisar definir variável nenhuma na mão.
+>
+> Sem essas credenciais a aplicação **não sobe** e informa qual variável está faltando (não há
+> credencial embutida de *fallback*).
 
 ### Opção 1 — Com Docker (recomendada)
 
@@ -89,25 +96,19 @@ Esta opção roda a aplicação diretamente no seu computador. Exige instalar o 
    CREATE DATABASE xxxxxxxxx OWNER xxxxxxxxx;
    ```
 
-4. Informe à aplicação como conectar nesse banco pela variável de ambiente
-   `ConnectionStrings__Default` (o repositório não contém nenhuma credencial) e rode a API.
-
-   No **Linux/macOS**:
+4. Coloque o arquivo `.env` (enviado separadamente) na **raiz do projeto** e rode a API:
 
    ```bash
-   export ConnectionStrings__Default="Host=localhost;Port=5432;Database=xxxxxxxxx;Username=xxxxxxxxx;Password=xxxxxxxxx"
    dotnet run --project src/OniBusExpress.Api
    ```
 
-   No **Windows (PowerShell)**:
+   A aplicação lê o `.env` **automaticamente** ao iniciar, cria as tabelas e insere os dados de
+   exemplo. Aguarde a mensagem `Application started`.
 
-   ```powershell
-   $env:ConnectionStrings__Default = "Host=localhost;Port=5432;Database=xxxxxxxxx;Username=xxxxxxxxx;Password=xxxxxxxxx"
-   dotnet run --project src/OniBusExpress.Api
-   ```
-
-   Use as **mesmas credenciais** definidas no passo 3 (as do `.env`). Aguarde a mensagem `Application started` — a aplicação
-   cria as tabelas e insere os dados de exemplo automaticamente.
+   > Se o seu PostgreSQL local não estiver na porta indicada em `POSTGRES_PORT` (padrão `5432`),
+   > ajuste essa variável no `.env`. Como alternativa ao `.env`, é possível definir a variável de
+   > ambiente `ConnectionStrings__Default` com a *connection string* completa antes do `dotnet run` —
+   > é assim que as credenciais entram em produção; o `.env` é uma conveniência de desenvolvimento.
 5. Abra no navegador: **<http://localhost:8080/swagger>**.
 6. Para **parar**: pressione `Ctrl+C` no terminal.
 
