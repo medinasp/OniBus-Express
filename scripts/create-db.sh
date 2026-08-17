@@ -47,18 +47,49 @@ PORT="${POSTGRES_PORT:-5432}"
 
 export PGPASSWORD="$SUPERUSER_PASSWORD"
 
+# ---------------------------------------------------------------------------
+# Preflight: detectar e orientar antes de tentar provisionar.
+# ---------------------------------------------------------------------------
+if ! command -v psql >/dev/null 2>&1; then
+  echo "Erro: cliente 'psql' não encontrado no PATH." >&2
+  echo "  Instale o PostgreSQL client: https://www.postgresql.org/download/" >&2
+  exit 1
+fi
+
+server_reachable() {
+  if command -v pg_isready >/dev/null 2>&1; then
+    pg_isready -h "$HOST" -p "$PORT" >/dev/null 2>&1
+  else
+    PGCONNECT_TIMEOUT=3 psql -h "$HOST" -p "$PORT" -U "$SUPERUSER" -d postgres -c "SELECT 1" >/dev/null 2>&1
+  fi
+}
+
+if ! server_reachable; then
+  echo "Erro: nenhum servidor PostgreSQL respondeu em $HOST:$PORT." >&2
+  if command -v pg_lsclusters >/dev/null 2>&1 \
+     && pg_lsclusters 2>/dev/null | awk 'NR>1 && tolower($4)=="down"{f=1} END{exit !f}'; then
+    echo "  Há um cluster PostgreSQL local instalado, porém PARADO. Inicie-o, por exemplo:" >&2
+    echo "    sudo pg_ctlcluster <versao> main start   (ou: sudo systemctl start postgresql)" >&2
+  else
+    echo "  Verifique se o PostgreSQL está instalado, em execução, e se POSTGRES_PORT ($PORT) está correta." >&2
+    echo "    Iniciar (Linux): sudo systemctl start postgresql" >&2
+    echo "    Instalar:        https://www.postgresql.org/download/" >&2
+  fi
+  exit 1
+fi
+
 echo "Provisionando em $HOST:$PORT como superusuário '$SUPERUSER'..."
 
 psql -v ON_ERROR_STOP=1 --no-psqlrc -h "$HOST" -p "$PORT" -U "$SUPERUSER" -d postgres <<SQL
 DO \$\$
 BEGIN
    IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '${POSTGRES_USER}') THEN
-      CREATE ROLE ${POSTGRES_USER} LOGIN PASSWORD '${POSTGRES_PASSWORD}';
+      CREATE ROLE "${POSTGRES_USER}" LOGIN PASSWORD '${POSTGRES_PASSWORD}';
    END IF;
 END
 \$\$;
 
-SELECT 'CREATE DATABASE ${POSTGRES_DB} OWNER ${POSTGRES_USER}'
+SELECT 'CREATE DATABASE "${POSTGRES_DB}" OWNER "${POSTGRES_USER}"'
  WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '${POSTGRES_DB}')\gexec
 SQL
 

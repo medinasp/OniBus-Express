@@ -46,18 +46,44 @@ $Port = if ($env:POSTGRES_PORT) { $env:POSTGRES_PORT } else { '5432' }
 
 $env:PGPASSWORD = $SuperuserPassword
 
+# ---------------------------------------------------------------------------
+# Preflight: detectar e orientar antes de tentar provisionar.
+# ---------------------------------------------------------------------------
+if (-not (Get-Command psql -ErrorAction SilentlyContinue)) {
+    Write-Error "Cliente 'psql' não encontrado no PATH. Instale o PostgreSQL client: https://www.postgresql.org/download/"
+}
+
+$reachable = $false
+if (Get-Command pg_isready -ErrorAction SilentlyContinue) {
+    pg_isready -h $DbHost -p $Port *> $null
+    $reachable = ($LASTEXITCODE -eq 0)
+} else {
+    $env:PGCONNECT_TIMEOUT = '3'
+    'SELECT 1' | psql -h $DbHost -p $Port -U $Superuser -d postgres *> $null
+    $reachable = ($LASTEXITCODE -eq 0)
+}
+
+if (-not $reachable) {
+    Write-Error @"
+Nenhum servidor PostgreSQL respondeu em ${DbHost}:${Port}.
+Verifique se o PostgreSQL está instalado, em execução, e se POSTGRES_PORT ($Port) está correta.
+  Iniciar (Windows): net start postgresql-x64-16   (ajuste a versão) — ou pelo aplicativo 'Serviços'.
+  Instalar:          https://www.postgresql.org/download/
+"@
+}
+
 Write-Host "Provisionando em ${DbHost}:${Port} como superusuário '$Superuser'..."
 
 $Sql = @"
 DO `$`$
 BEGIN
    IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '$($env:POSTGRES_USER)') THEN
-      CREATE ROLE $($env:POSTGRES_USER) LOGIN PASSWORD '$($env:POSTGRES_PASSWORD)';
+      CREATE ROLE "$($env:POSTGRES_USER)" LOGIN PASSWORD '$($env:POSTGRES_PASSWORD)';
    END IF;
 END
 `$`$;
 
-SELECT 'CREATE DATABASE $($env:POSTGRES_DB) OWNER $($env:POSTGRES_USER)'
+SELECT 'CREATE DATABASE "$($env:POSTGRES_DB)" OWNER "$($env:POSTGRES_USER)"'
  WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '$($env:POSTGRES_DB)')\gexec
 "@
 
